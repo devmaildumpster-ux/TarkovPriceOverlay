@@ -240,6 +240,9 @@ public sealed class SettingsWindow : Window
             () => s.WikiHotkeyEnabled, v => s.WikiHotkeyEnabled = v));
         p.Children.Add(HotkeyRow("Open tarkov.dev for the last item", ShellFeatures.Dev, () => s.EffectiveDevHotkey, v => s.DevHotkey = v, AppSettingsDefaults.Dev,
             () => s.DevHotkeyEnabled, v => s.DevHotkeyEnabled = v));
+        p.Children.Add(HotkeyRow("Ammo chart for the last hovered caliber (works in game, doesn't take focus)", ShellFeatures.AmmoChart,
+            () => s.EffectiveAmmoChartHotkey, v => s.AmmoChartHotkey = v, AppSettingsDefaults.AmmoChart,
+            () => s.AmmoChartHotkeyEnabled, v => s.AmmoChartHotkeyEnabled = v));
         p.Children.Add(HotkeyRow("In-game search bar", ShellFeatures.Search, () => s.EffectiveSearchHotkey, v => s.SearchHotkey = v, AppSettingsDefaults.Search,
             () => s.SearchHotkeyEnabled, v => s.SearchHotkeyEnabled = v));
         p.Children.Add(Note("Ctrl, Alt or Win is required (or an F-key) so a shortcut never swallows normal typing. Ctrl+Shift+W/D aren't the defaults because browsers use them (close window / bookmark all). \"Last item\" = the last card, main-window selection or search result."));
@@ -563,4 +566,5 @@ internal static class AppSettingsDefaults
     public const string Dev = Core.Settings.AppSettings.DefaultDevHotkey;
     public const string Search = Core.Settings.AppSettings.DefaultSearchHotkey;
     public const string MapStyle = Core.Settings.AppSettings.DefaultMapStyleHotkey;
+    public const string AmmoChart = Core.Settings.AppSettings.DefaultAmmoChartHotkey;
 }

@@ -4,7 +4,7 @@ namespace TarkovOverlay.Core.Presentation;
 
 public enum CardKind { Full, PossibleStrong, PossibleWeak, Several, Conflict, NoMatch, NoTooltip, Message }
 
-public sealed record CardRow(string Label, string Value, string? Detail = null, ValueTier? Tier = null, string? Symbol = null);
+public sealed record CardRow(string Label, string Value, string? Detail = null, ValueTier? Tier = null, string? Symbol = null, IReadOnlyList<int>? ArmorClasses = null);
 
 public sealed record CardSection(string Title, IReadOnlyList<string> Rows, int MoreCount);
 

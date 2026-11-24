@@ -31,7 +31,7 @@ public static class ControlsHelp
     public static IReadOnlyList<string> DefaultHotkeys => new[]
     {
         MainKey1, MainKey2, MainKey3,
-        AppSettings.DefaultSearchHotkey, AppSettings.DefaultWikiHotkey, AppSettings.DefaultDevHotkey, AppSettings.DefaultMapStyleHotkey,
+        AppSettings.DefaultSearchHotkey, AppSettings.DefaultWikiHotkey, AppSettings.DefaultDevHotkey, AppSettings.DefaultMapStyleHotkey, AppSettings.DefaultAmmoChartHotkey,
     };
 
     /// <summary>A shortcut as shown to the user: the chord, or "(not set)" when cleared or switched off.</summary>
@@ -56,6 +56,7 @@ public static class ControlsHelp
         var wiki = Show(s.EffectiveWikiHotkey, s.WikiHotkeyEnabled);
         var dev = Show(s.EffectiveDevHotkey, s.DevHotkeyEnabled);
         var style = Show(s.EffectiveMapStyleHotkey, s.MapStyleHotkeyEnabled);
+        var ammo = Show(s.EffectiveAmmoChartHotkey, s.AmmoChartHotkeyEnabled);
         var shotKey = live?.ScreenshotKey is { Length: > 0 } k ? k : "PrtScn";
         var exitOcr = live?.ExitListReader is { } on ? (on ? "on" : "off") : "off by default";
         var dwell = s.EffectiveAutoDwellMs;
@@ -75,6 +76,7 @@ public static class ControlsHelp
                 new ControlRow("Move the mouse", $"Hides the card (past {s.EffectiveMoveTolerancePx} px). It also hides after 7 s (15 s when expanded). The card never takes focus; clicks go through it."),
                 new ControlRow(wiki, "Open the Tarkov Wiki page of the last item looked up.", "wiki"),
                 new ControlRow(dev, "Open the last item looked up on tarkov.dev.", "tarkov.dev"),
+                new ControlRow(ammo, "Open the ammo chart for the caliber you last hovered or looked up. Every round of that caliber is compared side by side (penetration, damage, armor classes, prices). Esc closes it. Also Ammo… in the main window.", "ammo chart"),
             }),
             new ControlSection("Quick search bar (in game)", new[]
             {
@@ -108,11 +110,12 @@ public static class ControlsHelp
             }),
             new ControlSection("Buttons, menus & windows", new[]
             {
+                new ControlRow("Ammo…", "Opens the ammo chart: pick a caliber and compare every round (penetration, damage, armor classes 1–6, flea and trader prices for this PvP/PvE mode). Shortcut: the ammo-chart key above. Also More ▾ › Ammo chart…."),
                 new ControlRow("? Controls", "This list (also More ▾, the tray menu and Settings…). Shows your current keys."),
                 new ControlRow("Settings…", "Settings (also click the PvP/PvE badge): Overlay & Card, Map & Screenshots, Troubleshooting. Changes apply right away."),
                 new ControlRow("Settings… › Record… / Clear / Default", "Change a shortcut: click Record… and press the new keys (Esc cancels), Clear to turn it off, Default to restore it."),
                 new ControlRow("Refresh prices", "Download fresh prices now."),
-                new ControlRow("More ▾ (map)", "Exits for auto / PMC / Scav, Show transits, Browse all quests, Area names, Fit whole map, Quest tracker…, Hideout tracker…, Test position…, Map settings…, Controls & hotkeys."),
+                new ControlRow("More ▾ (map)", "Exits for auto / PMC / Scav, Show transits, Browse all quests, Area names, Fit whole map, Quest tracker…, Hideout tracker…, Ammo chart…, Test position…, Map settings…, Controls & hotkeys."),
                 new ControlRow("Quests…", "Quest tracker. Double-click or Space marks a quest done / not done."),
                 new ControlRow("Hideout…", "Hideout tracker: the station levels you've built (cards skip those needs)."),
                 new ControlRow("Deselect all / Only my active quests", "Quick quest-pin choices under the map."),

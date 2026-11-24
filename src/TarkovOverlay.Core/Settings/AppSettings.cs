@@ -90,13 +90,16 @@ public sealed class AppSettings
     /// <summary>1.2.1: switch the map Satellite ↔ Vector from in game (no focus change).</summary>
     public string? MapStyleHotkey { get; set; }
     public bool MapStyleHotkeyEnabled { get; set; } = true;
+    /// <summary>1.3.0: open the ammo chart for the caliber you last hovered (works in game).</summary>
+    public string? AmmoChartHotkey { get; set; }
+    public bool AmmoChartHotkeyEnabled { get; set; } = true;
     /// <summary>1.2.3: the Controls &amp; hotkeys window was shown once on first launch.</summary>
     public bool ShownControlsHelp { get; set; }
     /// <summary>1.2.6: look for a newer GitHub release when the app starts (default on). Never downloads anything.</summary>
     public bool CheckForUpdates { get; set; } = true;
     /// <summary>1.2.6: "Skip this version" on the update banner (e.g. "1.2.7"); a later version shows again.</summary>
     public string? SkippedUpdateVersion { get; set; }
-    public const string DefaultWikiHotkey = "Ctrl+Alt+W", DefaultDevHotkey = "Ctrl+Alt+D", DefaultSearchHotkey = "Alt+`", DefaultMapStyleHotkey = "Ctrl+Alt+M";
+    public const string DefaultWikiHotkey = "Ctrl+Alt+W", DefaultDevHotkey = "Ctrl+Alt+D", DefaultSearchHotkey = "Alt+`", DefaultMapStyleHotkey = "Ctrl+Alt+M", DefaultAmmoChartHotkey = "Ctrl+Alt+A";
     [JsonIgnore] public string EffectiveMapStyleHotkey => MapStyleHotkey ?? DefaultMapStyleHotkey;
 
     /// <summary>The extra shortcuts that are on and set, by name (for spotting two actions on one chord).</summary>
@@ -106,6 +109,7 @@ public sealed class AppSettings
         if (DevHotkeyEnabled && EffectiveDevHotkey.Length > 0) yield return ("tarkov.dev", EffectiveDevHotkey);
         if (SearchHotkeyEnabled && EffectiveSearchHotkey.Length > 0) yield return ("search", EffectiveSearchHotkey);
         if (MapStyleHotkeyEnabled && EffectiveMapStyleHotkey.Length > 0) yield return ("map style", EffectiveMapStyleHotkey);
+        if (AmmoChartHotkeyEnabled && EffectiveAmmoChartHotkey.Length > 0) yield return ("ammo chart", EffectiveAmmoChartHotkey);
     }
 
     /// <summary>Names of other shortcuts using the same chord as <paramref name="name"/> (case/spacing-insensitive).</summary>
@@ -119,6 +123,7 @@ public sealed class AppSettings
     [JsonIgnore] public string EffectiveWikiHotkey => WikiHotkey ?? DefaultWikiHotkey;
     [JsonIgnore] public string EffectiveDevHotkey => DevHotkey ?? DefaultDevHotkey;
     [JsonIgnore] public string EffectiveSearchHotkey => SearchHotkey ?? DefaultSearchHotkey;
+    [JsonIgnore] public string EffectiveAmmoChartHotkey => AmmoChartHotkey ?? DefaultAmmoChartHotkey;
 }
 
 public sealed class SettingsStore
@@ -148,6 +153,7 @@ public sealed class SettingsStore
                 if (s.DevHotkey is { Length: > 0 } d && !Input.KeyChord.TryParse(d, out _)) s.DevHotkey = null;
                 if (s.SearchHotkey is { Length: > 0 } q && !Input.KeyChord.TryParse(q, out _)) s.SearchHotkey = null;
                 if (s.MapStyleHotkey is { Length: > 0 } m && !Input.KeyChord.TryParse(m, out _)) s.MapStyleHotkey = null;
+                if (s.AmmoChartHotkey is { Length: > 0 } a && !Input.KeyChord.TryParse(a, out _)) s.AmmoChartHotkey = null;
                 foreach (var t in s.Tracked) t.Remaining = Math.Clamp(t.Remaining, 0, Math.Max(0, t.Required));
                 return s;
             }

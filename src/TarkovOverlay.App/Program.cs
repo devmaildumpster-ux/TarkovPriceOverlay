@@ -29,6 +29,7 @@ public static class Program
         if (args.Contains("--map-ui-preview")) return Cli(() => Map.MapUiPreview.Run(args));
         if (args.Contains("--map-selftest")) return Cli(() => Map.MapSelfTest.Run(args));
         if (args.Contains("--card-preview")) return Cli(() => CardPreview.Run(args));
+        if (args.Contains("--ammo-chart-preview")) return Cli(() => AmmoChartPreview.Run(args));
         if (args.Contains("--map-style-preview")) return Cli(() => Map.MapStylePreview.Run(args));
         if (args.Contains("--lifetime-selftest")) return Cli(() => LifetimeSelfTest(legacy: args.Contains("legacy")));
         int ac = Array.IndexOf(args, "--auto-close-ms");

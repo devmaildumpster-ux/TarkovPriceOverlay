@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using TarkovOverlay.Core.Ammo;
 
 namespace TarkovOverlay.Core.Catalog;
 
@@ -52,6 +53,8 @@ public sealed class CatalogItem
     public string? WikiLink { get; init; }
     /// <summary>tarkov.dev item page from the feed ("link"); null in caches written before 1.2.0.</summary>
     public string? Link { get; init; }
+    /// <summary>1.3.0: ballistic stats when the item is ammo; null for everything else and for caches written before 1.3.0.</summary>
+    public AmmoStats? Ammo { get; init; }
 
     [JsonIgnore] public bool IsNoFlea => Types.Any(t => string.Equals(t, "noFlea", StringComparison.OrdinalIgnoreCase));
     [JsonIgnore] public bool IsPreset => Types.Contains("preset");

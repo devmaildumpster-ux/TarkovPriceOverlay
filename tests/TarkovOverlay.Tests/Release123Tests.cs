@@ -31,7 +31,7 @@ public class Release123Tests
             var row = Rows(help).Single(r => r.HotkeyId == name);
             Assert.Equal(chord, row.Keys);
         }
-        Assert.Equal(4, st.ExtraHotkeys().Count());
+        Assert.Equal(5, st.ExtraHotkeys().Count());
         Assert.Equal("` (backtick)", Rows(help).First(r => r.HotkeyId == "price").Keys);
     }
 

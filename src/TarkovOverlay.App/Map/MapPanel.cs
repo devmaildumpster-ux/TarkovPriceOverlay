@@ -132,8 +132,17 @@ public sealed class MapPanel : DockPanel
         quests.Click += (_, _) => f.OpenQuests();
         menu.Items.Add(quests);
         var hideout = new MenuItem { Header = "Hideout tracker…" };
+        var ammoChart = new MenuItem { Header = "Ammo chart…" };
+        ammoChart.Click += (_, _) =>
+        {
+            var snap = f.App.Catalog.Context?.Snapshot;
+            var last = f.App.LastItem;
+            var round = last != null && snap != null ? TarkovOverlay.Core.Ammo.AmmoChart.RoundOf(last, snap) : null;
+            Views.AmmoChartWindow.Open(f.App, Window.GetWindow(this), round?.Ammo?.Caliber, round?.Id, fromHotkey: false);
+        };
         hideout.Click += (_, _) => Views.HideoutWindow.Open(f.App, Window.GetWindow(this));
         menu.Items.Add(hideout);
+        menu.Items.Add(ammoChart);
         var testPos = new MenuItem { Header = "Test position from latest screenshot" };
         testPos.Click += (_, _) => { _posStatus.Text = f.TestLatestScreenshot(); _posStatus.Visibility = Visibility.Visible; };
         menu.Items.Add(testPos);

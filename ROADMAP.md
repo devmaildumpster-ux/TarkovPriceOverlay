@@ -6,17 +6,15 @@ Ideas and feedback are welcome: open an issue.
 ## Done
 
 - **Update check on launch + GitHub Releases** (1.2.6). When the app starts, it checks the latest release on GitHub
-  and shows a small "Update available" strip with a Download button if there's a newer version. It never installs
-  anything by itself and stays quiet when you're offline. New versions are published as
+  and shows a small "Update available" strip. Since 1.2.8, **Update now** downloads, checks and installs the update
+  for you. New versions are published as
   [GitHub Releases](https://github.com/devmaildumpster-ux/TarkovPriceOverlay/releases). *Status: Done*
+- **Ammo chart** (1.3.0). A hotkey (Ctrl+Alt+A) and an Ammo… button open a chart for the caliber you last hovered.
+  Every round is compared side by side (penetration, damage, armor damage, frag chance, speed, tracer, and this
+  mode's flea / trader prices), with color-coded effectiveness against armor classes 1–6. The hover card also shows
+  the caliber, pen, damage and a class bar at a glance. *Status: Done*
 
 ## Planned
-
-### High priority
-
-- **Ammo chart.** A hotkey popup for the caliber you're hovering that compares every ammo type side by side
-  (penetration, damage and armor damage), so you can tell rounds apart at a glance.
-  *Status: Planned*
 
 ### Prices and items
 

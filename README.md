@@ -58,6 +58,7 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
 | Move the mouse | Hides the card (past 6 px). It also hides after 7 s (15 s when expanded). The card never takes focus; clicks go through it. |
 | Ctrl+Alt+W | Open the Tarkov Wiki page of the last item looked up. |
 | Ctrl+Alt+D | Open the last item looked up on tarkov.dev. |
+| Ctrl+Alt+A | Open the ammo chart for the caliber you last hovered or looked up. Every round of that caliber is compared side by side (penetration, damage, armor classes, prices). Esc closes it. Also Ammo… in the main window. |
 
 **Quick search bar (in game)**
 
@@ -99,11 +100,12 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
 
 | Control | What it does |
 |---|---|
+| Ammo… | Opens the ammo chart: pick a caliber and compare every round (penetration, damage, armor classes 1–6, flea and trader prices for this PvP/PvE mode). Shortcut: the ammo-chart key above. Also More ▾ › Ammo chart…. |
 | ? Controls | This list (also More ▾, the tray menu and Settings…). Shows your current keys. |
 | Settings… | Settings (also click the PvP/PvE badge): Overlay & Card, Map & Screenshots, Troubleshooting. Changes apply right away. |
 | Settings… › Record… / Clear / Default | Change a shortcut: click Record… and press the new keys (Esc cancels), Clear to turn it off, Default to restore it. |
 | Refresh prices | Download fresh prices now. |
-| More ▾ (map) | Exits for auto / PMC / Scav, Show transits, Browse all quests, Area names, Fit whole map, Quest tracker…, Hideout tracker…, Test position…, Map settings…, Controls & hotkeys. |
+| More ▾ (map) | Exits for auto / PMC / Scav, Show transits, Browse all quests, Area names, Fit whole map, Quest tracker…, Hideout tracker…, Ammo chart…, Test position…, Map settings…, Controls & hotkeys. |
 | Quests… | Quest tracker. Double-click or Space marks a quest done / not done. |
 | Hideout… | Hideout tracker: the station levels you've built (cards skip those needs). |
 | Deselect all / Only my active quests | Quick quest-pin choices under the map. |
@@ -120,6 +122,17 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
 | Right-click | Menu: Open, Settings…, Controls & hotkeys, Quit. |
 
 <!-- controls:end -->
+
+## New in 1.3.0
+
+- **Ammo chart.** A new **Ammo…** button and the **Ctrl+Alt+A** shortcut (changeable in Settings…) open a chart of
+  every round in a caliber, side by side: damage, penetration, armor damage %, frag chance, speed, tracer, plus
+  flea and trader-buy prices for the current PvP / PvE mode. Armor classes 1–6 are color-coded (green = usually
+  pens, yellow = 50/50, red = almost never). Pick a caliber, search, sort, or show only tracers / rounds sold by
+  traders. The shortcut uses the caliber of the last ammo you hovered or looked up and doesn't take focus from the
+  game; Esc closes the chart. The price card for a round (or an ammo pack) also shows its caliber, pen, damage and
+  a class bar at a glance. Data comes from the same cached tarkov.dev catalog as prices, so it respects the outage
+  gate and needs no extra download.
 
 ## New in 1.2.8
 
@@ -242,6 +255,8 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
    - Exit code 1 means a bundled component is broken.
 5. Optional: `TarkovPriceOverlay.exe --update-check` prints what the update check sees (this version, the latest release).
    `TarkovPriceOverlay.exe --self-update` does the same as Update now from a terminal (download, verify, install, restart).
+   `TarkovPriceOverlay.exe --ammo-chart-preview out.png [--caliber Caliber556x45NATO] [--item M995]` renders the ammo chart to a PNG.
+
 
 ## Use
 

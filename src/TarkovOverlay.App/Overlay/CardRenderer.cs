@@ -141,16 +141,45 @@ public static class CardRenderer
         };
         Grid.SetColumn(value, 1);
         g.Children.Add(value);
-        if (!string.IsNullOrEmpty(r.Detail))
+        if (!string.IsNullOrEmpty(r.Detail) || r.ArmorClasses is { Count: > 0 })
         {
-            var d = Label(r.Detail!, 8.5, r.Tier is { } t2 ? Theme.ForTier(t2) : Theme.Muted, FontWeights.Normal);
-            d.TextTrimming = TextTrimming.CharacterEllipsis;
-            d.HorizontalAlignment = HorizontalAlignment.Right;
-            d.Opacity = r.Tier is null ? 0.85 : 0.9;
-            Grid.SetRow(d, 1); Grid.SetColumnSpan(d, 2);
-            g.Children.Add(d);
+            var detail = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 1, 0, 0) };
+            if (r.ArmorClasses is { Count: > 0 } ac) detail.Children.Add(ArmorBar(ac));
+            if (!string.IsNullOrEmpty(r.Detail))
+            {
+                var d = Label(r.Detail!, 8.5, r.Tier is { } t2 ? Theme.ForTier(t2) : Theme.Muted, FontWeights.Normal);
+                d.TextTrimming = TextTrimming.CharacterEllipsis;
+                d.Opacity = r.Tier is null ? 0.85 : 0.9;
+                d.Margin = new Thickness(r.ArmorClasses is { Count: > 0 } ? 6 : 0, 0, 0, 0);
+                detail.Children.Add(d);
+            }
+            Grid.SetRow(detail, 1); Grid.SetColumnSpan(detail, 2);
+            g.Children.Add(detail);
         }
         return g;
+    }
+
+    /// <summary>Six tiny colored squares, class 1–6, for the ammo row on a card.</summary>
+    internal static UIElement ArmorBar(IReadOnlyList<int> classes)
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        for (int i = 0; i < classes.Count; i++)
+        {
+            int lv = classes[i];
+            row.Children.Add(new Border
+            {
+                Width = 12, Height = 12, Background = Theme.ForArmor(lv), CornerRadius = new CornerRadius(2),
+                Margin = new Thickness(i == 0 ? 0 : 2, 0, 0, 0),
+                ToolTip = $"Class {i + 1}: {TarkovOverlay.Core.Ammo.ArmorEffect.Word(lv)}",
+                Child = new TextBlock
+                {
+                    Text = (i + 1).ToString(), FontSize = 7.5, FontWeight = FontWeights.Bold, FontFamily = Theme.Font,
+                    Foreground = lv == 0 ? Theme.Muted : Theme.Window, HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center, Padding = new Thickness(0),
+                },
+            });
+        }
+        return row;
     }
 
     private static TextBlock Label(string text, double size, Brush fg, FontWeight weight, bool wrap = false, bool spacing = false, Thickness? margin = null) => new()

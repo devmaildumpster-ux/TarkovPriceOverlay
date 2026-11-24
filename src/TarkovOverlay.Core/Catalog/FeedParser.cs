@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using TarkovOverlay.Core.Ammo;
 
 namespace TarkovOverlay.Core.Catalog;
 
@@ -136,6 +137,7 @@ public static class FeedParser
                 WikiLink = Str(r, "wikiLink"),
                 Link = Str(r, "link"),
                 ContainsItems = Arr(r, "containsItems").Select(c => Str(c, "item") is { } cid ? new ContainedItem(cid, Dbl(c, "count") ?? 1) : null).Where(c => c != null).Cast<ContainedItem>().ToArray(),
+                Ammo = ParseAmmo(r),
             };
             items[id] = item;
         }
@@ -165,6 +167,29 @@ public static class FeedParser
         if (t == null || price == null || rub == null) return null;
         return new TraderBuy(t, price.Value, rub.Value, (Str(o, "currency") ?? "RUB").ToUpperInvariant(),
             Int(o, "minTraderLevel") ?? 1, Str(o, "taskUnlock"), Int(o, "buyLimit"));
+    }
+
+
+    /// <summary>1.3.0: ItemPropertiesAmmo (damage, penetration, caliber, …). Null when the item isn't ammo.</summary>
+    internal static AmmoStats? ParseAmmo(JsonElement r)
+    {
+        if (Prop(r, "properties") is not { ValueKind: JsonValueKind.Object } p) return null;
+        if (Str(p, "propertiesType") != "ItemPropertiesAmmo") return null;
+        var caliber = Str(p, "caliber");
+        if (string.IsNullOrWhiteSpace(caliber)) return null;
+        int? projectiles = Int(p, "projectileCount");
+        if (projectiles is <= 0) projectiles = null;
+        return new AmmoStats(
+            caliber,
+            Int(p, "damage"),
+            Int(p, "penetrationPower"),
+            Int(p, "armorDamage"),
+            Dbl(p, "fragmentationChance"),
+            Int(p, "initialSpeed"),
+            Bool(p, "tracer"),
+            Str(p, "tracerColor"),
+            Str(p, "ammoType"),
+            projectiles);
     }
 
     private static ContainerSpec? ParseContainer(JsonElement r)

@@ -2,6 +2,7 @@ using System.Windows;
 using TarkovOverlay.App.Native;
 using TarkovOverlay.App.Overlay;
 using TarkovOverlay.Core.Input;
+using TarkovOverlay.Core.Ammo;
 
 namespace TarkovOverlay.App.Services;
 
@@ -12,7 +13,7 @@ namespace TarkovOverlay.App.Services;
 /// </summary>
 public sealed class ShellFeatures : IDisposable
 {
-    public const string Wiki = "wiki", Dev = "tarkov.dev", Search = "search", MapStyle = "map style";
+    public const string Wiki = "wiki", Dev = "tarkov.dev", Search = "search", MapStyle = "map style", AmmoChart = "ammo chart";
     private readonly AppServices _s;
     private readonly ExtraHotkeys _keys = new();
     private SearchOverlayWindow? _search;
@@ -44,7 +45,9 @@ public sealed class ShellFeatures : IDisposable
             if (Map.MapFeature.Instance is { } f) f.ToggleMapStyle("shortcut");
             else Log.Write("map style shortcut: the map isn't running");
         });
-        foreach (var n in new[] { Wiki, Dev, Search, MapStyle })
+        // 1.3.0: ammo chart for the last hovered / looked-up caliber (doesn't take focus from the game).
+        _keys.Set(AmmoChart, Chord(st.EffectiveAmmoChartHotkey), st.AmmoChartHotkeyEnabled, OpenAmmoChart);
+        foreach (var n in new[] { Wiki, Dev, Search, MapStyle, AmmoChart })
             if (st.HotkeyClashes(n) is { Count: > 0 } c) Log.Write($"hotkey {n}: same key as {string.Join(", ", c)} (only one of them can work)");
     }
 
@@ -53,10 +56,25 @@ public sealed class ShellFeatures : IDisposable
     /// <summary>Releases the extra shortcuts while Settings… records a new key (so the old chord can be pressed).</summary>
     public void SuspendHotkeys()
     {
-        foreach (var n in new[] { Wiki, Dev, Search, MapStyle }) _keys.Set(n, null, false, () => { });
+        foreach (var n in new[] { Wiki, Dev, Search, MapStyle, AmmoChart }) _keys.Set(n, null, false, () => { });
     }
 
     private static KeyChord? Chord(string text) => KeyChord.TryParse(text, out var c) ? c : null;
+
+    /// <summary>Opens the ammo chart on the last item's caliber (or the picker, if the last item wasn't ammo).</summary>
+    public void OpenAmmoChart()
+    {
+        var snap = _s.Catalog.Context?.Snapshot;
+        string? cal = null, id = null;
+        if (_s.LastItem is { } item && snap != null)
+        {
+            var round = TarkovOverlay.Core.Ammo.AmmoChart.RoundOf(item, snap);
+            if (round?.Ammo != null) { cal = round.Ammo.Caliber; id = round.Id; }
+        }
+        if (snap == null) Log.Write("ammo chart shortcut: no catalog yet");
+        else if (cal == null) Log.Write("ammo chart shortcut: last item isn't ammo; opening the picker");
+        Views.AmmoChartWindow.Open(_s, owner: null, caliber: cal, highlightId: id, fromHotkey: true);
+    }
 
     // ---------------- tray ----------------
     /// <summary>Shows the tray icon while "Minimize to tray" is on; removes it when off.</summary>

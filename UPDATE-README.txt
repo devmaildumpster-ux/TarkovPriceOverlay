@@ -1,41 +1,32 @@
-Tarkov Price Overlay 1.2.8 (applies over 1.0.0 – 1.2.7, self-contained build)
+Tarkov Price Overlay 1.3.0 (applies over 1.0.0 – 1.2.8, self-contained build)
 
-INSTALL (update) - this one time by hand
-Versions up to 1.2.7 only have the old Download button, so 1.2.8 has to be copied in by hand once.
-From 1.2.8 on, the Update now button installs new versions for you.
+INSTALL (update)
+From 1.2.8 on, you can use Update now and the overlay installs this for you and restarts. To install by hand:
 1. Close Tarkov Price Overlay (if "Minimize to tray" is on: right-click the tray icon › Quit).
-2. Copy every file and folder in TarkovPriceOverlay-update-1.2.8.zip (including "licenses" and the new
-   TarkovPriceOverlay.Updater.exe) into
+2. Copy every file and folder in TarkovPriceOverlay-update-1.3.0.zip (including "licenses") into
    <your install folder>\TarkovPriceOverlay\self-contained
    and choose "Replace the files in the destination". Copy everything, not just the exe.
-3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.2.8.0).
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.3.0.0).
    Settings, tracked items, quest progress and map settings are kept.
 New users: download TarkovPriceOverlay-win-x64.zip and run TarkovPriceOverlay\self-contained\TarkovPriceOverlay.exe.
-Framework-dependent users: download the full zip and replace your framework-dependent folder.
+Framework-dependent users: use Update now (it takes the full zip) or replace your framework-dependent folder from the full zip.
 
-NEW: UPDATE NOW (THE APP UPDATES ITSELF)
-- The "Update available" strip has Update now, Release page (the old Download: opens the release in your
-  browser), Skip this version and ×. Settings… › Troubleshooting › Updates has Update now and Cancel too.
-- Update now:
-  1. asks GitHub for this repo's latest release and picks the file: the small update zip for self-contained
-     installs, the full TarkovPriceOverlay-win-x64.zip for framework-dependent ones (or if there's no update zip);
-  2. downloads it with a progress bar; Cancel stops it and nothing changes. Downloads are only accepted over HTTPS
-     from github.com (this repo's release files) and GitHub's download servers;
-  3. checks the size and SHA-256 against GitHub's checksum for the file, and against SHA256SUMS.txt when the
-     release has one. A file without any checksum, or one that doesn't match, is deleted and not installed;
-  4. unpacks it to %LOCALAPPDATA%\TarkovPriceOverlay\update\staging, refusing zips with unexpected layout or
-     file names that would escape the folder, and checks the files inside are the release's version;
-  5. closes the overlay and starts TarkovPriceOverlay.Updater.exe (copied to the update folder so nothing in your
-     install is locked). It waits for the overlay to exit, backs up every file it replaces to
-     %LOCALAPPDATA%\TarkovPriceOverlay\update\backup, copies the new files in, and if anything fails puts all of
-     them back, then restarts the overlay;
-  6. after the restart the strip says "Updated to X.Y.Z" (or why it didn't install; you keep the old version).
-- Never touches settings, caches, logs or quest progress (they live in %LOCALAPPDATA%, not the install folder).
-- Never asks for admin rights. If the install folder needs them (for example under Program Files) you get a
-  clear message: move the TarkovPriceOverlay folder somewhere you own, or update by hand.
-- Every step is written to overlay.log (lines starting "update:" and "updater:").
-- TarkovPriceOverlay.exe --self-update does the same from a terminal.
-- Releases now also attach SHA256SUMS.txt.
+NEW: AMMO CHART
+- Ammo… in the main window (and More ▾ › Ammo chart…) opens a chart of every round in a caliber, side by side.
+- Columns: damage, penetration, armor damage %, frag chance, speed, tracer, flea price, trader buy (name + loyalty
+  level + price) for the current PvP / PvE mode, and color-coded cells for armor classes 1–6
+  (green = usually pens, yellow = 50/50, red = almost never). The scale compares penetration to 10 × class; it is
+  for telling rounds apart at a glance, not a simulation of an in-raid roll.
+- Pick a caliber, type to search, sort by any column, and optionally show only tracers or only rounds a trader sells.
+- Shortcut Ctrl+Alt+A (changeable in Settings… › Overlay & Card) opens the chart for the caliber of the last ammo
+  you hovered or looked up, without taking focus from the game. Esc closes it. If the last item wasn't ammo, the
+  caliber picker opens instead.
+- The price card for a loose round (or an ammo pack) now shows its caliber, pen, damage, armor damage and a small
+  class 1–6 bar, plus frag chance, speed and tracer when they apply, so you can tell types apart without opening
+  the chart.
+- Stats come from the same cached tarkov.dev catalog as prices (no extra download). While tarkov.dev is down the
+  chart keeps the last good data, same as prices. After installing 1.3.0, ammo stats appear on the next price
+  refresh (automatic at start).
 
 ALSO
-- Includes everything from 1.0.1-1.2.7 (exit list fix, update check on launch, outage handling, …).
+- Includes everything from 1.0.1–1.2.8 (Update now, exit-list fix, update check, outage handling, …).

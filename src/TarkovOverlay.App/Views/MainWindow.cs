@@ -322,6 +322,12 @@ public sealed class MainWindow : Window
         var bar = new DockPanel { LastChildFill = true };
         var buttons = Ui.Row(
             Ui.Button("? Controls", (_, _) => ControlsWindow.Open(_s, this), "Every hotkey, mouse control and button, with your current keys"),
+            Ui.Button("Ammo…", (_, _) =>
+            {
+                var snap = _s.Catalog.Context?.Snapshot;
+                var round = _s.LastItem != null && snap != null ? TarkovOverlay.Core.Ammo.AmmoChart.RoundOf(_s.LastItem, snap) : null;
+                AmmoChartWindow.Open(_s, this, round?.Ammo?.Caliber, round?.Id, fromHotkey: false);
+            }, "Compare every ammo type of a caliber (penetration, damage, armor classes, this mode's prices). Shortcut: " + _s.Settings.EffectiveAmmoChartHotkey),
             Ui.Button("Refresh prices", async (_, _) => await _s.Catalog.RefreshNowAsync(), "Download fresh prices now"),
             Ui.Button("Settings…", (_, _) => OpenSettings(), "Shortcut, game mode, card size and dismiss rules, auto-read timing, map & screenshots, troubleshooting"));
         DockPanel.SetDock(buttons, Dock.Right);

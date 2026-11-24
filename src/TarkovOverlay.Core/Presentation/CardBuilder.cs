@@ -1,6 +1,7 @@
 using System.Globalization;
 using TarkovOverlay.Core.Catalog;
 using TarkovOverlay.Core.Economics;
+using TarkovOverlay.Core.Ammo;
 using TarkovOverlay.Core.Indexes;
 using TarkovOverlay.Core.Matching;
 using TarkovOverlay.Core.Recognition;
@@ -227,6 +228,7 @@ public sealed class CardBuilder
         var rows = new List<CardRow>();
         if (_o.ShowFlea) rows.Add(FleaRow(s));
         if (_o.ShowTrader && TraderRow(s) is { } t) rows.Add(t);
+        rows.AddRange(AmmoRows(item));
         var msgs = new List<string>();
         var alts = (alternatives ?? Array.Empty<CatalogItem>()).Where(a => a.Id != item.Id).Take(2).ToList();
         foreach (var a in alts) msgs.Add("Or: " + CandidateLabel(a, alts, sameName: false));
@@ -270,6 +272,7 @@ public sealed class CardBuilder
         if (_o.ShowPerSlot && here == null && PerSlotRow(s) is { } ps) rows.Add(ps); // with a stack, the stack row carries the per-slot rating
         if (here == null && fullRow != null) rows.Add(fullRow);
         if (!compact) rows.RemoveAll(r => r.Value == "—");
+        rows.AddRange(AmmoRows(item));
 
         var facts = Facts(item).ToList();
         if (stackable && stack != null && stack.Count == null)
@@ -384,6 +387,29 @@ public sealed class CardBuilder
         string label = p.Route == SaleRoute.FleaNet ? "Per slot · flea net" : "Per slot · trader";
         string sym = ValueTiers.Symbol(p.Tier);
         return new CardRow(label, $"{sym} {Money.Rub(p.PerSlotValue)}", p.Footprint > 1 ? $"{p.Footprint} slots · {ValueTiers.Word(p.Tier)}" : ValueTiers.Word(p.Tier), p.Tier, sym);
+    }
+
+    // ---------------- ammo (1.3.0) ----------------
+    /// <summary>Caliber, pen/damage and a 6-class armor bar, for loose rounds and for ammo packs (the rounds inside).</summary>
+    public IReadOnlyList<CardRow> AmmoRows(CatalogItem item)
+    {
+        var stats = AmmoChart.StatsOf(item, Snap);
+        if (stats == null) return Array.Empty<CardRow>();
+        string dmg = stats.IsMultiProjectile && stats.Damage is { } d ? $"{stats.Pellets}×{d}" : stats.Damage?.ToString() ?? "—";
+        var parts = new List<string>();
+        if (stats.Penetration is { } p) parts.Add($"{p} pen");
+        if (stats.Damage != null) parts.Add($"{dmg} dmg");
+        if (stats.ArmorDamage is { } a) parts.Add($"{a}% armor");
+        string value = parts.Count > 0 ? string.Join(" · ", parts) : "—";
+        var detail = new List<string>();
+        if (stats.FragmentationChance is { } f) detail.Add("frag " + AmmoChart.FormatFrag(f));
+        if (stats.Speed is { } sp) detail.Add($"{sp} m/s");
+        if (stats.IsTracer) detail.Add(string.IsNullOrWhiteSpace(stats.TracerColor) ? "tracer" : "tracer " + stats.TracerColor);
+        if (item.IsAmmoPack) detail.Insert(0, "rounds in this pack");
+        return new[]
+        {
+            new CardRow(AmmoCaliber.Display(stats.Caliber), value, detail.Count > 0 ? string.Join(" · ", detail) : null, ArmorClasses: ArmorEffect.For(stats.Penetration)),
+        };
     }
 
     // ---------------- facts ----------------
