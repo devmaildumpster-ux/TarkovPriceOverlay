@@ -22,11 +22,6 @@ It never reads game memory, injects, or sends input to the game.
 3. Run **`TarkovPriceOverlay\self-contained\TarkovPriceOverlay.exe`**. Windows SmartScreen may warn because the exe is
    unsigned: click **More info → Run anyway**.
 
-**Already have it installed?** Download **`TarkovPriceOverlay-update-<version>.zip`** from the same release, close the
-app, and copy everything in it (including the `licenses` folder) into your `TarkovPriceOverlay\self-contained` folder,
-replacing the files. Settings, tracked items and quest progress are kept. (The update zip is for the
-`self-contained` folder; if you use `framework-dependent`, download the full zip instead.)
-
 **Updates:** the app checks GitHub for a newer release when it starts and shows a small "Update available" strip.
 Since 1.2.8, **Update now** installs it for you: it downloads the release file from GitHub, checks its SHA-256,
 replaces the program files and restarts the overlay (settings, tracked items and quest progress are kept). **Release
