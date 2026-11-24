@@ -115,7 +115,7 @@ public static class CardRenderer
         {
             Background = Theme.Card, BorderBrush = Theme.CardEdge, BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(7), Child = stack, Width = baseWidth,
-            SnapsToDevicePixels = true, IsHitTestVisible = interactive,
+            SnapsToDevicePixels = true, ClipToBounds = true, IsHitTestVisible = interactive,
         };
         TextOptions.SetTextFormattingMode(border, TextFormattingMode.Ideal);
         if (Math.Abs(scale - 1) > 0.001) border.LayoutTransform = new ScaleTransform(scale, scale);
@@ -124,6 +124,10 @@ public static class CardRenderer
 
     private static UIElement Row(CardRow r)
     {
+        // 1.3.0 ammo rows: caliber, a wrapping pen/dmg/armor line, then the class bar and
+        // frag/speed/tracer underneath, so nothing is clipped at the 176 px card width.
+        if (r.ArmorClasses is { Count: > 0 }) return AmmoRow(r);
+
         var g = new Grid { Margin = new Thickness(0, 2, 0, 1) };
         g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -141,22 +145,46 @@ public static class CardRenderer
         };
         Grid.SetColumn(value, 1);
         g.Children.Add(value);
-        if (!string.IsNullOrEmpty(r.Detail) || r.ArmorClasses is { Count: > 0 })
+        if (!string.IsNullOrEmpty(r.Detail))
         {
-            var detail = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 1, 0, 0) };
-            if (r.ArmorClasses is { Count: > 0 } ac) detail.Children.Add(ArmorBar(ac));
-            if (!string.IsNullOrEmpty(r.Detail))
-            {
-                var d = Label(r.Detail!, 8.5, r.Tier is { } t2 ? Theme.ForTier(t2) : Theme.Muted, FontWeights.Normal);
-                d.TextTrimming = TextTrimming.CharacterEllipsis;
-                d.Opacity = r.Tier is null ? 0.85 : 0.9;
-                d.Margin = new Thickness(r.ArmorClasses is { Count: > 0 } ? 6 : 0, 0, 0, 0);
-                detail.Children.Add(d);
-            }
-            Grid.SetRow(detail, 1); Grid.SetColumnSpan(detail, 2);
-            g.Children.Add(detail);
+            var d = Label(r.Detail!, 8.5, r.Tier is { } t2 ? Theme.ForTier(t2) : Theme.Muted, FontWeights.Normal);
+            d.TextTrimming = TextTrimming.CharacterEllipsis;
+            d.Opacity = r.Tier is null ? 0.85 : 0.9;
+            d.HorizontalAlignment = HorizontalAlignment.Right;
+            d.Margin = new Thickness(0, 1, 0, 0);
+            Grid.SetRow(d, 1); Grid.SetColumnSpan(d, 2);
+            g.Children.Add(d);
         }
         return g;
+    }
+
+    private static UIElement AmmoRow(CardRow r)
+    {
+        // StackPanel would otherwise measure these at infinite width, so a long
+        // "52% armor · frag · speed · tracer" line would not wrap and would clip.
+        const double inner = BaseWidth - 18;
+        var col = new StackPanel { Margin = new Thickness(0, 2, 0, 1), MaxWidth = inner };
+        if (!string.IsNullOrEmpty(r.Label))
+        {
+            var lab = Label(r.Label, 9.5, Theme.Muted, FontWeights.Normal, wrap: true);
+            lab.MaxWidth = inner;
+            col.Children.Add(lab);
+        }
+        col.Children.Add(new TextBlock
+        {
+            Text = r.Value, FontFamily = Theme.Numbers, FontSize = 12, FontWeight = FontWeights.Bold,
+            Foreground = Theme.Text, TextWrapping = TextWrapping.Wrap, Width = inner,
+        });
+        if (r.ArmorClasses is { Count: > 0 } ac)
+            col.Children.Add(new Border { Child = ArmorBar(ac), Margin = new Thickness(0, 3, 0, 0), HorizontalAlignment = HorizontalAlignment.Left });
+        if (!string.IsNullOrEmpty(r.Detail))
+        {
+            var d = Label(r.Detail!, 8.5, Theme.Muted, FontWeights.Normal, wrap: true, margin: new Thickness(0, 2, 0, 0));
+            d.Opacity = 0.9;
+            d.Width = inner;
+            col.Children.Add(d);
+        }
+        return col;
     }
 
     /// <summary>Six tiny colored squares, class 1–6, for the ammo row on a card.</summary>

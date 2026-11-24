@@ -23,7 +23,7 @@ NEW: AMMO CHART
   caliber picker opens instead.
 - The price card for a loose round (or an ammo pack) now shows its caliber, pen, damage, armor damage and a small
   class 1–6 bar, plus frag chance, speed and tracer when they apply, so you can tell types apart without opening
-  the chart.
+  the chart. Those lines wrap inside the normal card width, so a long stats line (frag + speed + tracer) is not cut off.
 - Stats come from the same cached tarkov.dev catalog as prices (no extra download). While tarkov.dev is down the
   chart keeps the last good data, same as prices. After installing 1.3.0, ammo stats appear on the next price
   refresh (automatic at start).

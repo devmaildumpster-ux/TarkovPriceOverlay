@@ -202,7 +202,7 @@ public class AmmoChartTests
         Assert.Equal("9x19", row.Label);
         Assert.Contains("18 pen", row.Value);
         Assert.Contains("56 dmg", row.Value);
-        Assert.Contains("35% armor", row.Value);
+        Assert.Contains("35% armor", row.Detail);
         Assert.Equal(ArmorEffect.For(18), row.ArmorClasses);
         Assert.Contains(card.Facts, f => f.StartsWith("Per-round price"));
     }
@@ -228,6 +228,26 @@ public class AmmoChartTests
         var card = new CardBuilder(LiveCatalog.RegularContext, null, () => LiveCatalog.FetchedAt).Full(rig, compact: true);
         Assert.DoesNotContain(card.Rows, r => r.ArmorClasses is { Count: > 0 });
         Assert.Empty(new CardBuilder(LiveCatalog.RegularContext, null, () => LiveCatalog.FetchedAt).AmmoRows(rig));
+    }
+
+    [Fact]
+    public void Card_ForATracerRound_KeepsFragSpeedAndTracerOnTheRow()
+    {
+        // M856A1: tracer + frag + speed, the longest stats line the 176 px card has to wrap.
+        var m856a1 = Snap.Items.Values.First(i => i.ShortName == "M856A1" && i.IsAmmo);
+        Assert.True(m856a1.Ammo!.IsTracer);
+        Assert.NotNull(m856a1.Ammo.FragmentationChance);
+        Assert.NotNull(m856a1.Ammo.Speed);
+        var row = Assert.Single(new CardBuilder(LiveCatalog.RegularContext, null, () => LiveCatalog.FetchedAt).AmmoRows(m856a1));
+        Assert.Contains("pen", row.Value);
+        Assert.Contains("dmg", row.Value);
+        Assert.DoesNotContain("…", row.Value);
+        Assert.DoesNotContain("…", row.Detail);
+        Assert.Contains("% armor", row.Detail);
+        Assert.Contains("frag", row.Detail);
+        Assert.Contains("m/s", row.Detail);
+        Assert.Contains("tracer", row.Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(6, row.ArmorClasses!.Count);
     }
 
     [Fact]

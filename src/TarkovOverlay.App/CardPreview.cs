@@ -18,11 +18,12 @@ internal static class CardPreview
     {
         int i = Array.IndexOf(args, "--card-preview");
         var rest = args.Skip(i + 1).ToList();
-        if (rest.Count < 2) { Console.WriteLine("usage: --card-preview out.png [--mode pve] [--expect-lines N] \"line 1\" [\"line 2\"]"); return 1; }
+        if (rest.Count < 2) { Console.WriteLine("usage: --card-preview out.png [--mode pve] [--expect-lines N] [--scale 1] \"line 1\" [\"line 2\"]"); return 1; }
         var outFile = rest[0]; rest.RemoveAt(0);
         string? Take(string name) { int k = rest.IndexOf(name); if (k < 0 || k + 1 >= rest.Count) return null; var v = rest[k + 1]; rest.RemoveRange(k, 2); return v; }
         var mode = GameMode.FromId(Take("--mode"));
         int expect = int.TryParse(Take("--expect-lines"), out var e) ? e : 0;
+        double scale = double.TryParse(Take("--scale"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sc) && sc > 0 ? sc : 1.5;
         bool refresh = rest.Remove("--refresh"); // 1.2.5: try a refresh first (shows the outage notice when tarkov.dev is down)
 
         using var services = new AppServices();
@@ -39,11 +40,12 @@ internal static class CardPreview
         var card = services.Cards(ctx).ForMatch(m);
         Console.WriteLine($"notice: {card.Notice ?? "(none)"}");
         Console.WriteLine($"card {card.Kind} '{card.Heading}' '{card.Title}' rows {string.Join("; ", card.Rows.Select(r => r.Label + " " + r.Value))} msgs {string.Join("; ", card.Messages)}");
-        var el = CardRenderer.Build(card, 1.5);
+        var el = CardRenderer.Build(card, scale);
         el.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         el.Arrange(new Rect(el.DesiredSize));
         el.UpdateLayout();
-        int w = Math.Max(1, (int)Math.Ceiling(el.ActualWidth)), h = Math.Max(1, (int)Math.Ceiling(el.ActualHeight));
+        // DesiredSize includes LayoutTransform; ActualWidth does not, and would clip a scaled card.
+        int w = Math.Max(1, (int)Math.Ceiling(el.DesiredSize.Width)), h = Math.Max(1, (int)Math.Ceiling(el.DesiredSize.Height));
         var dv = new DrawingVisual();
         using (var dc = dv.RenderOpen())
         {

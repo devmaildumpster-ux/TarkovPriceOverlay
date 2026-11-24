@@ -399,9 +399,9 @@ public sealed class CardBuilder
         var parts = new List<string>();
         if (stats.Penetration is { } p) parts.Add($"{p} pen");
         if (stats.Damage != null) parts.Add($"{dmg} dmg");
-        if (stats.ArmorDamage is { } a) parts.Add($"{a}% armor");
         string value = parts.Count > 0 ? string.Join(" · ", parts) : "—";
         var detail = new List<string>();
+        if (stats.ArmorDamage is { } a) detail.Add($"{a}% armor");
         if (stats.FragmentationChance is { } f) detail.Add("frag " + AmmoChart.FormatFrag(f));
         if (stats.Speed is { } sp) detail.Add($"{sp} m/s");
         if (stats.IsTracer) detail.Add(string.IsNullOrWhiteSpace(stats.TracerColor) ? "tracer" : "tracer " + stats.TracerColor);
