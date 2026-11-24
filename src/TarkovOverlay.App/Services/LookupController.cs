@@ -29,6 +29,7 @@ public sealed class LookupController
     private readonly HoverRecognizer _recognizer;
     private readonly StackCountReader? _stackReader;
     private readonly TraderOfferReader? _offerReader;
+    private readonly IconShortNameReader? _iconReader;
     private readonly CursorCardWindow _card;
     private readonly Func<AppSettings> _settings;
     private readonly Func<Tracker> _tracker;
@@ -39,9 +40,9 @@ public sealed class LookupController
     public event Action<LookupReport>? Completed;
     public event Action<MatchResult>? CandidatesFound;
 
-    public LookupController(CatalogService catalog, HoverRecognizer recognizer, CursorCardWindow card, Func<AppSettings> settings, Func<Tracker> tracker, Dispatcher ui, StackCountReader? stackReader = null, TraderOfferReader? offerReader = null)
+    public LookupController(CatalogService catalog, HoverRecognizer recognizer, CursorCardWindow card, Func<AppSettings> settings, Func<Tracker> tracker, Dispatcher ui, StackCountReader? stackReader = null, TraderOfferReader? offerReader = null, IconShortNameReader? iconReader = null)
     {
-        _stackReader = stackReader; _offerReader = offerReader;
+        _stackReader = stackReader; _offerReader = offerReader; _iconReader = iconReader;
         _catalog = catalog; _recognizer = recognizer; _card = card; _settings = settings; _tracker = tracker; _ui = ui;
     }
 
@@ -178,6 +179,31 @@ public sealed class LookupController
                 + $" · title lines {det.Best?.TitleLines} · reads: " + string.Join(" | ", outcome.Attempts.Select(a =>
                     $"{a.Read.Engine}@{a.Read.Scale:0.##}× [{string.Join(" / ", a.Read.Lines.Select(l => l.Length > 80 ? l[..80] : l))}] → {a.Match.Kind}{(a.Match.Repair is { Length: > 0 } r ? " (" + r + ")" : "")}"));
             if (Stale()) { summary += " (discarded: cursor moved or mode changed during recognition)"; return; }
+
+            // 1.3.1: when the tooltip name is not a verified unique match, read the short name painted on
+            // the item icon and use it to resolve a Possible match / Several card (never overrides Verified).
+            if (_iconReader != null && outcome.Result.Kind != MatchKind.Verified)
+            {
+                var cap = img; var tip = det.Best!.Interior; var cr = capRect; int monH = monitor.Bounds.Height;
+                var snap = Snapshot?.Invoke(origin);
+                try
+                {
+                    var icon = await Task.Run(() => _iconReader.ReadBestAsync(cap, origin.X - cr.X, origin.Y - cr.Y, tip,
+                        snap?.Image, snap is null ? 0 : snap.Cursor.X - snap.Rect.X, snap is null ? 0 : snap.Cursor.Y - snap.Rect.Y,
+                        snap?.Tooltip?.Offset(-snap.Rect.X, -snap.Rect.Y), monH, cts.Token));
+                    var before = outcome.Result;
+                    var after = IconShortNameTiebreaker.Apply(ctx.Items, before, icon.Texts);
+                    summary += $" · icon [{string.Join(" | ", icon.Texts)}] ({icon.Note}) → {after.Kind}"
+                        + (after.Repair is { Length: > 0 } ir ? $" ({ir})" : "");
+                    if (after != before)
+                    {
+                        outcome = new RecognitionOutcome(after, outcome.Attempts, outcome.Elapsed, outcome.Notes.Append("icon short name: " + icon.Note).ToList());
+                        summary += after.Single is { } got ? $" '{got.Name}'" : "";
+                    }
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException) { summary += " · icon error: " + ex.Message; }
+                if (Stale()) { summary += " (discarded: cursor moved)"; return; }
+            }
 
             // Stack count: only after a verified name, only for stackables; it cannot change the identified item.
             if (_stackReader != null && outcome.Result.Kind == MatchKind.Verified && outcome.Result.Single is { StackMaxSize: > 1 } stackItem)

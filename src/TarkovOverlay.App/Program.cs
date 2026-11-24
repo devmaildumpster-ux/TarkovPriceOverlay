@@ -56,7 +56,7 @@ public static class Program
         services = new AppServices();
         var card = new CursorCardWindow();
         var hotkey = new HotkeyManager();
-        var lookup = new LookupController(services.Catalog, services.Recognizer, card, () => services.Settings, () => services.Tracker, Dispatcher.CurrentDispatcher, services.StackReader, services.OfferReader);
+        var lookup = new LookupController(services.Catalog, services.Recognizer, card, () => services.Settings, () => services.Tracker, Dispatcher.CurrentDispatcher, services.StackReader, services.OfferReader, services.IconReader);
         hotkey.Pressed += lookup.Trigger;
         var auto = new AutoReader(() => services.Settings, lookup, card);
         lookup.Snapshot = auto.SnapshotNear;

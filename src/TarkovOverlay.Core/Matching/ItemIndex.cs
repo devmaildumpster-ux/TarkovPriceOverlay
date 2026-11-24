@@ -90,6 +90,30 @@ public sealed class ItemIndex
     public IReadOnlyList<CatalogItem> ExactFull(string text) =>
         _byFull.TryGetValue(NameNormalizer.Compact(text), out var l) ? l : Array.Empty<CatalogItem>();
 
+    /// <summary>1.3.1: items whose short name compact-equals <paramref name="text"/> (presets excluded).</summary>
+    public IReadOnlyList<CatalogItem> ExactShort(string text)
+    {
+        var q = NameNormalizer.Compact(text);
+        if (q.Length < 2 || !_byShort.TryGetValue(q, out var l)) return Array.Empty<CatalogItem>();
+        return l.Where(s => !s.IsPreset).ToList();
+    }
+
+    /// <summary>1.3.1: short names within <paramref name="maxDistance"/> folded glyphs (presets excluded).</summary>
+    public IReadOnlyList<CatalogItem> CloseShort(string? text, int maxDistance = 1)
+    {
+        var q = Fold(NameNormalizer.Compact(text));
+        if (q.Length < 3) return Array.Empty<CatalogItem>();
+        var hits = new Dictionary<string, CatalogItem>(StringComparer.Ordinal);
+        foreach (var (item, _, _, sc) in _all)
+        {
+            if (item.IsPreset || sc.Length == 0) continue;
+            var f = Fold(sc);
+            if (Math.Abs(f.Length - q.Length) > maxDistance) continue;
+            if (Levenshtein.Distance(f, q, maxDistance) <= maxDistance) hits.TryAdd(item.Id, item);
+        }
+        return hits.Values.ToList();
+    }
+
     /// <summary>
     /// Matches one OCR read (lines already joined with spaces). Order: literal full name, then unit/number
     /// repairs, then model-letter substitutions. Approximate search is only used for suggestions.

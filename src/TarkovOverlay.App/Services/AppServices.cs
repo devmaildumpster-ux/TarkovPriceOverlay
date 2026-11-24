@@ -27,6 +27,7 @@ public sealed class AppServices : IDisposable
     public TesseractOcrEngine Tesseract { get; }
     public HoverRecognizer Recognizer { get; }
     public StackCountReader StackReader { get; }
+    public IconShortNameReader IconReader { get; }
     public TraderOfferReader OfferReader { get; }
     /// <summary>1.2.0: built hideout levels per mode (hideout-progress.json).</summary>
     public HideoutProgressStore Hideout { get; }
@@ -168,6 +169,7 @@ public sealed class AppServices : IDisposable
         Tesseract = new TesseractOcrEngine(AppContext.BaseDirectory);
         Recognizer = new HoverRecognizer(WindowsOcr, Tesseract);
         StackReader = new StackCountReader(WindowsOcr, Tesseract);
+        IconReader = new IconShortNameReader(WindowsOcr, Tesseract);
         OfferReader = new TraderOfferReader(WindowsOcr, Tesseract);
         Hideout = new HideoutProgressStore(HideoutProgressStore.DefaultFile(Paths));
         // Quest states live in the map feature's quest tracker (single source of truth); none → nothing filtered.

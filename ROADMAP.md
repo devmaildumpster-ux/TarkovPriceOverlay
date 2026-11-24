@@ -13,13 +13,15 @@ Ideas and feedback are welcome: open an issue.
   Every round is compared side by side (penetration, damage, armor damage, frag chance, speed, tracer, and this
   mode's flea / trader prices), with color-coded effectiveness against armor classes 1–6. The hover card also shows
   the caliber, pen, damage and a class bar at a glance. *Status: Done*
+- **Icon short-name tiebreaker** (1.3.1). When a hover would have shown a "Possible match" or "Several" card, the
+  overlay also reads the short name painted on the item icon and uses it to pick the right item when it can (for
+  example a unique short name, or one candidate among several). A verified full-name match is never changed, and
+  a bad icon read is ignored if it disagrees with the tooltip. Items that share a short name (loose ammo and its
+  packs, both labeled "M995") still show the picker. *Status: Done*
 
 ## Planned
 
 ### Prices and items
-
-- **Icon short-name tiebreaker.** Read the item's short name from its icon, so "Possible match" cards resolve on
-  their own instead of asking you to check. *Status: Planned*
 - **Quest & hideout flags.** Mark items you still need for quests or hideout upgrades, e.g. "Needed: 2 for
   Gunsmith". *Status: Planned*
 - **Barter & craft value.** Show when bartering or crafting with an item is worth more than selling it on the flea.

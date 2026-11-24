@@ -123,6 +123,14 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
 
 <!-- controls:end -->
 
+## New in 1.3.1
+
+- **Icon short-name tiebreaker.** When the tooltip name is messy or is a short name shared by several items, the
+  overlay also reads the short name painted on the item icon. A unique short name (or one that only one of the
+  possible items has) resolves the card on its own, so you don't have to pick in the main window. A verified
+  full-name match is left alone. Items that share a short name (for example loose M995 and its ammo packs) still
+  show the "Several possible matches" card.
+
 ## New in 1.3.0
 
 - **Ammo chart.** A new **Ammo…** button and the **Ctrl+Alt+A** shortcut (changeable in Settings…) open a chart of

@@ -3,6 +3,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using TarkovOverlay.App.Overlay;
 using TarkovOverlay.Core.Catalog;
+using TarkovOverlay.Core.Matching;
 using TarkovOverlay.Core.Presentation;
 using TarkovOverlay.App.Services;
 
@@ -18,12 +19,13 @@ internal static class CardPreview
     {
         int i = Array.IndexOf(args, "--card-preview");
         var rest = args.Skip(i + 1).ToList();
-        if (rest.Count < 2) { Console.WriteLine("usage: --card-preview out.png [--mode pve] [--expect-lines N] [--scale 1] \"line 1\" [\"line 2\"]"); return 1; }
+        if (rest.Count < 2) { Console.WriteLine("usage: --card-preview out.png [--mode pve] [--expect-lines N] [--scale 1] [--icon-short NAME] \"line 1\" [\"line 2\"]"); return 1; }
         var outFile = rest[0]; rest.RemoveAt(0);
         string? Take(string name) { int k = rest.IndexOf(name); if (k < 0 || k + 1 >= rest.Count) return null; var v = rest[k + 1]; rest.RemoveRange(k, 2); return v; }
         var mode = GameMode.FromId(Take("--mode"));
         int expect = int.TryParse(Take("--expect-lines"), out var e) ? e : 0;
         double scale = double.TryParse(Take("--scale"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sc) && sc > 0 ? sc : 1.5;
+        var iconShort = Take("--icon-short");
         bool refresh = rest.Remove("--refresh"); // 1.2.5: try a refresh first (shows the outage notice when tarkov.dev is down)
 
         using var services = new AppServices();
@@ -37,6 +39,12 @@ internal static class CardPreview
         Console.WriteLine($"status bar ({bar.Level}): {bar.Text}");
         var m = ctx.Items.MatchLines(rest, expect);
         Console.WriteLine($"lines [{string.Join(" / ", rest)}] → {m.Kind} {m.Repair} · {string.Join(" | ", m.Items.Take(3).Select(x => x.Name))} · alternatives {string.Join(" | ", m.Alternatives.Select(x => x.Name))}");
+        if (!string.IsNullOrWhiteSpace(iconShort))
+        {
+            var after = IconShortNameTiebreaker.Apply(ctx.Items, m, new[] { iconShort });
+            Console.WriteLine($"icon-short '{iconShort}' → {after.Kind} {after.Repair} · {string.Join(" | ", after.Items.Take(3).Select(x => x.Name))}");
+            m = after;
+        }
         var card = services.Cards(ctx).ForMatch(m);
         Console.WriteLine($"notice: {card.Notice ?? "(none)"}");
         Console.WriteLine($"card {card.Kind} '{card.Heading}' '{card.Title}' rows {string.Join("; ", card.Rows.Select(r => r.Label + " " + r.Value))} msgs {string.Join("; ", card.Messages)}");

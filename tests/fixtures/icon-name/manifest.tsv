@@ -1,0 +1,7 @@
+file	scale	screenHeight	cursorX	cursorY	tipX	tipY	tipW	tipH	shortName	covered
+salewa_100.ppm.gz	1.0	1080	245	125	259	145	57	26	Salewa	0
+salewa_150.ppm.gz	1.5	1620	367	187	388	217	87	39	Salewa	0
+splint_100.ppm.gz	1.0	1080	245	125	259	145	47	26	Splint	0
+m995_100.ppm.gz	1.0	1080	245	125	259	145	50	26	M995	0
+m855_icon_m995_tip_100.ppm.gz	1.0	1080	245	125	259	145	50	26	M855	0
+salewa_covered_100.ppm.gz	1.0	1080	245	125	222	102	144	80	Salewa	1
