@@ -7,7 +7,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <Version>1.2.5</Version>
+    <Version>1.2.6</Version>
     <Company>TarkovPriceOverlay</Company>
     <Product>Tarkov Price Overlay</Product>
     <!-- Public builds: no build-machine paths in the .dll/.pdb (source paths become /_/...). -->

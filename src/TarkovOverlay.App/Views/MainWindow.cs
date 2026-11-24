@@ -35,6 +35,10 @@ public sealed class MainWindow : Window
     private readonly TextBlock _autoText = Ui.Text("", 12, Theme.Text);
     private readonly TextBlock _dataState = Ui.Text("", 12, Theme.Muted);
     private readonly TextBlock _warn = Ui.Text("", 11.5, Theme.Warn, wrap: true);
+    // 1.2.6: "Update available" strip under the header (hidden unless a newer release exists)
+    private readonly Border _updateBar = new() { Visibility = Visibility.Collapsed, Margin = new Thickness(0, 4, 0, 0), Padding = new Thickness(8, 3, 6, 3), CornerRadius = new CornerRadius(3), BorderThickness = new Thickness(1) };
+    private readonly TextBlock _updateText = Ui.Text("", 12, Theme.Text, FontWeights.SemiBold);
+    private bool _updateDismissed;
     private readonly TextBox _search = new() { Margin = new Thickness(0, 4, 0, 4), Padding = new Thickness(4), FontSize = 13, Background = Theme.Window, Foreground = Theme.Text, BorderBrush = Theme.CardEdge, CaretBrush = Theme.Text };
     private readonly TextBlock _resultsHeader = Ui.Text("Results", 11, Theme.Muted);
     private readonly ListBox _results = new() { MinHeight = 160 };
@@ -138,8 +142,38 @@ public sealed class MainWindow : Window
         LocationChanged += (_, _) => { _s.Settings.MainLeft = Left; _s.Settings.MainTop = Top; _s.SaveSoon(); };
         Closed += (_, _) => { _floating?.Close(); };
 
+        // 1.2.6: release check after the window is up (background, 5 s timeout, silent on failure, never activates a window)
+        _s.UpdateResultChanged += r => Dispatcher.BeginInvoke(() => ShowUpdate(r));
+        Loaded += (_, _) => { if (_s.Settings.CheckForUpdates) _ = _s.CheckForUpdatesAsync(); };
+
         UpdateHeader();
         RefreshTracked();
+    }
+
+    private void ShowUpdate(Core.Updates.UpdateCheckResult r)
+    {
+        if (!r.ShowBanner || _updateDismissed || r.Latest is not { } latest) { _updateBar.Visibility = Visibility.Collapsed; return; }
+        _updateText.Text = $"Update available: {latest} (you have {r.Current})";
+        _updateBar.ToolTip = $"A newer version is on GitHub. Download opens the release page in your browser; nothing is downloaded or installed by itself.\n{r.Url}";
+        _updateBar.Tag = r;
+        _updateBar.Visibility = Visibility.Visible;
+    }
+
+    private Border BuildUpdateBar()
+    {
+        _updateBar.Background = new SolidColorBrush(Color.FromArgb(0x33, 0x4C, 0xAF, 0x50));
+        _updateBar.BorderBrush = Theme.Green;
+        var row = new DockPanel { LastChildFill = true };
+        var buttons = Ui.Row(
+            Ui.Button("Download", (_, _) => { if (_updateBar.Tag is Core.Updates.UpdateCheckResult r) LinkLauncher.OpenRelease(r.Url); }, "Open the release page in your browser"),
+            Ui.Button("Skip this version", (_, _) => { if (_updateBar.Tag is Core.Updates.UpdateCheckResult { Latest: { } v }) _s.SkipUpdate(v); }, "Don't show this version again (a later one will show)"),
+            Ui.Button("×", (_, _) => { _updateDismissed = true; _updateBar.Visibility = Visibility.Collapsed; }, "Hide until next launch"));
+        DockPanel.SetDock(buttons, Dock.Right);
+        row.Children.Add(buttons);
+        _updateText.VerticalAlignment = VerticalAlignment.Center;
+        row.Children.Add(_updateText);
+        _updateBar.Child = row;
+        return _updateBar;
     }
 
     /// <summary>Settings… › Game mode: prices/cards switch, and outside a raid the map reloads for the new mode.</summary>
@@ -236,6 +270,7 @@ public sealed class MainWindow : Window
         var col = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
         col.Children.Add(info);
         col.Children.Add(_warn);
+        col.Children.Add(BuildUpdateBar());
         bar.Children.Add(col);
         return Ui.Panel(bar, new Thickness(0, 0, 0, 6));
     }

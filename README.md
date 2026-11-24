@@ -7,10 +7,36 @@ buy-back price, value per inventory slot, and what the item is needed for (quest
 Data comes from Tarkov.dev. The app only reads screen pixels around the cursor when you press the shortcut.
 It never reads game memory, injects, or sends input to the game.
 
+## Download & install
+
+**This GitHub repository is source code only.** It has no `self-contained` folder and no `.exe`; those are in the
+release download.
+
+1. Open the **[latest release](https://github.com/devmaildumpster-ux/TarkovPriceOverlay/releases/latest)** and download
+   **`TarkovPriceOverlay-win-x64.zip`** (under *Assets*).
+2. Unzip it anywhere, for example `C:\Tools`. Inside you get:
+   ```
+   TarkovPriceOverlay\
+     self-contained\TarkovPriceOverlay.exe        <- run this one (no .NET install needed)
+     framework-dependent\TarkovPriceOverlay.exe   <- smaller; needs the .NET 8 Desktop Runtime
+     README.md, CONTROLS.txt, THIRD-PARTY-NOTICES.md, LICENSE.txt
+   ```
+   (Windows "Extract All" may add an outer `TarkovPriceOverlay-win-x64\` folder; that's fine.)
+3. Run **`TarkovPriceOverlay\self-contained\TarkovPriceOverlay.exe`**. Windows SmartScreen may warn because the exe is
+   unsigned: click **More info → Run anyway**.
+
+**Already have it installed?** Download **`TarkovPriceOverlay-update-<version>.zip`** from the same release, close the
+app, and copy everything in it (including the `licenses` folder) into your `TarkovPriceOverlay\self-contained` folder,
+replacing the files. Settings, tracked items and quest progress are kept. (The update zip is for the
+`self-contained` folder; if you use `framework-dependent`, download the full zip instead.)
+
+**Updates:** since 1.2.6 the app checks GitHub for a newer release when it starts and shows a small
+"Update available" strip with a **Download** button (opens the release page; nothing installs by itself). Turn it off
+in **Settings… › Troubleshooting › Updates**.
+
 ## Quick start for a new user
 
-1. Unzip the zip anywhere (for example `C:\Tools\TarkovPriceOverlay`) and run `self-contained\TarkovPriceOverlay.exe`
-   (no .NET install needed). Windows SmartScreen may warn because the exe is unsigned: click **More info → Run anyway**.
+1. Install as above and run `TarkovPriceOverlay\self-contained\TarkovPriceOverlay.exe`.
 2. In Tarkov, set **Settings › Graphics › Screen mode** to **Borderless** (or Windowed). Price cards can't draw over
    exclusive Fullscreen.
 3. Hover an item until Tarkov's name tooltip appears: the price card shows by itself (or press `` ` ``, the backtick).
@@ -90,6 +116,7 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
 | Pop out card / Load price history / Wiki / tarkov.dev | Buttons under the item card in the main window. |
 | Popped-out card | Drag to move; double-click or Esc closes it. |
 | − / + / × | Tracked items: one handed in, one more, stop tracking. |
+| Update available: Download / Skip this version / × | Shows under the top bar when a newer version is on GitHub. Download opens the release page in your browser (nothing installs by itself); Skip hides that version; × hides it until next launch. Turn the check off in Settings… › Troubleshooting › Updates. |
 
 **Tray icon (when Minimize to tray is on)**
 
@@ -99,6 +126,14 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
 | Right-click | Menu: Open, Settings…, Controls & hotkeys, Quit. |
 
 <!-- controls:end -->
+
+## New in 1.2.6
+
+- **Update check on launch.** The app asks GitHub once for the latest release (in the background, 5 s timeout, cached
+  for 6 h). If there's a newer version, a green "Update available" strip shows under the top bar with **Download**
+  (opens the release page; nothing downloads or installs by itself), **Skip this version** and **×**. Silent when
+  offline or rate-limited; never takes focus. Settings… › Troubleshooting › Updates turns it off or checks now.
+- First public release on GitHub, licensed GPL-3.0-or-later.
 
 ## New in 1.2.5
 
@@ -184,13 +219,14 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
 
 ## Run
 
-1. Unzip anywhere, for example `C:\Tools\TarkovPriceOverlay`.
-2. Run `self-contained\TarkovPriceOverlay.exe`, or `framework-dependent\TarkovPriceOverlay.exe` if you have the .NET 8 Desktop Runtime.
+1. Get the release zip as described in [Download & install](#download--install) and unzip it anywhere.
+2. Run `TarkovPriceOverlay\self-contained\TarkovPriceOverlay.exe`, or `TarkovPriceOverlay\framework-dependent\TarkovPriceOverlay.exe` if you have the .NET 8 Desktop Runtime.
 3. Windows SmartScreen may warn because the exe is unsigned. Click "More info" → "Run anyway".
 4. Optional check: open a terminal in that folder and run `TarkovPriceOverlay.exe --smoke-test`. Every line should say PASS.
    - Exit code 0 means everything works.
    - Exit code 2 means Windows OCR is missing, so only the Tesseract fallback is available.
    - Exit code 1 means a bundled component is broken.
+5. Optional: `TarkovPriceOverlay.exe --update-check` prints what the update check sees (this version, the latest release).
 
 ## Use
 
@@ -326,16 +362,28 @@ divider to the right of it to make it wider). Nothing is drawn over the game.
   - `TarkovPriceOverlay.exe --diagnose shot.png --cursor 1200,640 [--mode pve] [--scale 1.25]` runs the same pipeline on a full-monitor screenshot and writes `shot.png.diag.txt`.
 - Errors are logged to `%LOCALAPPDATA%\TarkovPriceOverlay\error.log`.
 
-## Build from source
+## Building from source
 
-Requires the .NET SDK 8.0.428 (pinned in `global.json`). Core and tests build on Linux too (`EnableWindowsTargeting`).
+You only need this to change the code; to just use the app, download the release zip above.
 
-```
-dotnet test tests/TarkovOverlay.Tests -c Release
-dotnet test tests/TarkovOverlay.Maps.Tests -c Release
-dotnet publish src/TarkovOverlay.App -c Release -r win-x64 --self-contained false -o publish/win-x64
-dotnet publish src/TarkovOverlay.App -c Release -r win-x64 --self-contained true  -o publish/win-x64-selfcontained
-```
+- **SDK:** .NET SDK **8.0.428**, pinned in `global.json` (`rollForward: disable`, so install exactly that version:
+  https://dotnet.microsoft.com/download/dotnet/8.0). The app targets Windows x64 (WPF); the core libraries and tests
+  also build and run on Linux/macOS with `-p:EnableWindowsTargeting=true`.
+- **Tests:**
+  ```
+  dotnet test tests/TarkovOverlay.Tests -c Release
+  dotnet test tests/TarkovOverlay.Maps.Tests -c Release
+  ```
+- **Release build** (the same commands that make the release zip):
+  ```
+  dotnet publish src/TarkovOverlay.App -c Release -r win-x64 --self-contained true  -o publish/self-contained
+  dotnet publish src/TarkovOverlay.App -c Release -r win-x64 --self-contained false -o publish/framework-dependent
+  ```
+  Output lands in `publish/self-contained/` and `publish/framework-dependent/` (each has `TarkovPriceOverlay.exe`,
+  `tessdata\`, `licenses\`, `README.md`, `CONTROLS.txt`, `THIRD-PARTY-NOTICES.md`, `LICENSE.txt`). The release zip is
+  those two folders inside a `TarkovPriceOverlay\` folder, plus `README.md`, `CONTROLS.txt`,
+  `THIRD-PARTY-NOTICES.md` and `LICENSE.txt`. Builds are deterministic and don't embed your local folder paths.
+- `publish/`, `bin/` and `obj/` are ignored by git.
 
 ## License
 

@@ -12,6 +12,8 @@ public sealed class AppPaths
     public string CatalogFile(string modeId) => Path.Combine(CacheDir(modeId), "catalog.json");
     public string SettingsFile => Path.Combine(Root, "settings.json");
     public string DiagnosticsDir => Path.Combine(Root, "diagnostics");
+    /// <summary>1.2.6: last GitHub release check (6 h cache).</summary>
+    public string UpdateCheckFile => Path.Combine(Root, "update-check.json");
 
     private static string Sanitize(string s) => string.Concat(s.Where(c => char.IsLetterOrDigit(c) || c == '-' || c == '_'));
 

@@ -1,4 +1,4 @@
-﻿Tarkov Price Overlay 1.2.5 — Controls & hotkeys (default keys)
+﻿Tarkov Price Overlay 1.2.6 — Controls & hotkeys (default keys)
 In the app: the "? Controls" button at the top shows this list with YOUR current keys.
 Shortcuts can be changed or cleared in Settings… (Overlay & Card: price shortcut on/off; Overlay & Card / Map & Screenshots: Record… / Clear / Default).
 Run Tarkov in Borderless or Windowed mode (cards can't draw over exclusive Fullscreen).
@@ -72,6 +72,11 @@ BUTTONS, MENUS & WINDOWS
                                 Buttons under the item card in the main window.
   Popped-out card               Drag to move; double-click or Esc closes it.
   − / + / ×                     Tracked items: one handed in, one more, stop tracking.
+  Update available: Download / Skip this version / ×
+                                Shows under the top bar when a newer version is on GitHub. Download opens the
+                                release page in your browser (nothing installs by itself); Skip hides that
+                                version; × hides it until next launch. Turn the check off in Settings… ›
+                                Troubleshooting › Updates.
 
 TRAY ICON (WHEN MINIMIZE TO TRAY IS ON)
   Click / double-click          Show the main window.

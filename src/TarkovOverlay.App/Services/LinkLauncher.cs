@@ -9,9 +9,13 @@ public static class LinkLauncher
     public static bool OpenWiki(CatalogItem? item) => item != null && Open(ItemLinks.Wiki(item), "wiki", item.Name);
     public static bool OpenTarkovDev(CatalogItem? item) => item != null && Open(ItemLinks.TarkovDev(item), "tarkov.dev", item.Name);
 
-    private static bool Open(Uri u, string what, string name)
+    /// <summary>1.2.6: the GitHub release page from the update banner (only this repo's https pages).</summary>
+    public static bool OpenRelease(string url) =>
+        Uri.TryCreate(TarkovOverlay.Core.Updates.UpdateChecker.SafeUrl(url), UriKind.Absolute, out var u) && Open(u, "release page", "update", checkedUrl: true);
+
+    private static bool Open(Uri u, string what, string name, bool checkedUrl = false)
     {
-        if (!ItemLinks.IsLaunchable(u)) { Log.Write($"link: refused {what} URL for '{name}': {u}"); return false; }
+        if (!checkedUrl && !ItemLinks.IsLaunchable(u)) { Log.Write($"link: refused {what} URL for '{name}': {u}"); return false; }
         try
         {
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(u.AbsoluteUri) { UseShellExecute = true });

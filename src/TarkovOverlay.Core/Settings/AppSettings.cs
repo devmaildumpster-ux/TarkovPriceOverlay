@@ -92,6 +92,10 @@ public sealed class AppSettings
     public bool MapStyleHotkeyEnabled { get; set; } = true;
     /// <summary>1.2.3: the Controls &amp; hotkeys window was shown once on first launch.</summary>
     public bool ShownControlsHelp { get; set; }
+    /// <summary>1.2.6: look for a newer GitHub release when the app starts (default on). Never downloads anything.</summary>
+    public bool CheckForUpdates { get; set; } = true;
+    /// <summary>1.2.6: "Skip this version" on the update banner (e.g. "1.2.7"); a later version shows again.</summary>
+    public string? SkippedUpdateVersion { get; set; }
     public const string DefaultWikiHotkey = "Ctrl+Alt+W", DefaultDevHotkey = "Ctrl+Alt+D", DefaultSearchHotkey = "Alt+`", DefaultMapStyleHotkey = "Ctrl+Alt+M";
     [JsonIgnore] public string EffectiveMapStyleHotkey => MapStyleHotkey ?? DefaultMapStyleHotkey;
 

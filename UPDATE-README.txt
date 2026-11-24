@@ -1,42 +1,48 @@
-Tarkov Price Overlay 1.2.5 (applies over 1.0.0 – 1.2.4, self-contained build)
+Tarkov Price Overlay 1.2.6 (applies over 1.0.0 – 1.2.5, self-contained build)
 
-INSTALL
+The first public release on GitHub: https://github.com/devmaildumpster-ux/TarkovPriceOverlay/releases/latest
+
+INSTALL (new users)
+1. Download TarkovPriceOverlay-win-x64.zip from the Releases page and unzip it anywhere.
+2. Run TarkovPriceOverlay\self-contained\TarkovPriceOverlay.exe (no .NET install needed).
+   Windows SmartScreen may warn because the exe is unsigned: More info › Run anyway.
+
+UPDATE (existing users, 1.0.0 – 1.2.5)
 1. Close Tarkov Price Overlay (if "Minimize to tray" is on: right-click the tray icon › Quit).
-2. Copy every file and folder in this zip (including "licenses") into
+2. Download TarkovPriceOverlay-update-1.2.6.zip and copy every file and folder in it (including "licenses") into
    <your install folder>\TarkovPriceOverlay\self-contained
    and choose "Replace the files in the destination". Copy everything, not just the exe.
-3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.2.5.0).
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.2.6.0).
    Settings, tracked items, quest progress and map settings are kept.
+   Using the framework-dependent folder instead? Download the full zip; the update zip is for self-contained.
 
-NEW: WHEN TARKOV.DEV IS DOWN
-- Counts as down: server errors (HTTP 500-599), "too many requests" (429), an error reply with no data
-  (e.g. "GraphQL server unavailable. Try again later."), timeouts and refused connections. If your PC can't
-  find tarkov.dev at all (no DNS / no network), it says "No internet connection" instead.
-  Not counted: an item without price history (404), or a reply that has data plus a few errors.
-- While it's down the app sends NO normal requests (prices, quests, hideout, crafts, barters, map/quest feeds,
-  price history). It checks with one small request after 1, 2, 5, 10 minutes, then every 15 minutes
-  (each ±20 %, never past 15 min; longer only if tarkov.dev sends Retry-After, up to 60 min).
-- When a check succeeds it downloads prices once, clears the message and logs it.
-- Refresh prices while down = one check now, at most once every 30 s ("checked under 30 s ago" otherwise).
-- Top bar: "tarkov.dev is down — showing prices from 10:25 AM (2 h ago) · next check in 4 min" (gold);
-  hover it for details. Quick search bar footer and price cards: "⚠ tarkov.dev down · prices from 2 h ago".
-  The cards keep showing your last prices. Nothing pops up; nothing takes focus.
-- With no saved prices at all: "tarkov.dev is down and no prices are saved yet — they load by themselves when
-  it's back", and the price key shows a card saying the same.
-- Your last prices are saved on disk and load at startup even during an outage, with their age.
-
-NEW: "FLEA SCANS STOPPED"
-- Today (Nov 24) tarkov.dev's files kept downloading fine, but its flea-market scanner had stopped at about
-  2:28 AM EST, so every price was more than 2 hours old and every card said "stale" — even right after
-  Refresh prices. The top bar now says so: "Prices downloaded just now · tarkov.dev's flea scans stopped at
-  2:28 AM (10 h ago)", and cards show "tarkov.dev not updating · last scan 10 h ago". New scans are picked up
-  by the normal 20-minute refresh.
+NEW: UPDATE CHECK ON LAUNCH
+- A few seconds after the app starts it asks GitHub once for the latest release (in the background, 5 s timeout).
+  If a newer version exists, a green strip appears under the top bar:
+    "Update available: 1.2.7 (you have 1.2.6)   [Download] [Skip this version] [×]"
+  - Download opens the release page in your browser. Nothing is downloaded or installed by itself.
+  - Skip this version hides that version for good; a later version shows again.
+  - × hides the strip until the next launch.
+- Gentle on GitHub: at most one check per launch, and the answer is cached for 6 hours (update-check.json in
+  %LOCALAPPDATA%\TarkovPriceOverlay), so restarting the app doesn't ask again.
+- Silent when it can't check: offline, timeout, GitHub rate limit (403/429; waits 6 h before asking again),
+  or anything unexpected. It only writes a line to overlay.log. Drafts and pre-releases are ignored.
+- Never takes focus from the game; the strip only appears in the main window.
+- Settings… › Troubleshooting › Updates: "Check for updates on launch" (on by default), Check now,
+  Open releases page, Show skipped version again, and what the last check said.
+- No account, token or personal data is sent: one plain request to api.github.com with the app's version in
+  the User-Agent.
 
 OVERLAY.LOG
-  tarkov.dev: DOWN (tarkov.dev is down: "GraphQL server unavailable…" on /regular/items); normal requests paused; next check 12:40:19 (in 70 s)
-  tarkov.dev: check failed (…); next check …
-  tarkov.dev: RECOVERED after 1 min (1 check(s)); refreshing prices once
-  tarkov.dev: prices refreshed after the outage (Fresh)
+  update check: UpToDate · this 1.2.6 · latest 1.2.6 · latest release v1.2.6
+  update check: Available · this 1.2.6 · latest 1.2.7 · latest release v1.2.7
+  update check: Failed · this 1.2.6 · latest ? · offline or unreachable (HttpRequestException: …)
 
 ALSO
-- Includes everything from 1.0.1-1.2.4 (fewer "possible match" cards, controls window, auto floor switching, …).
+- Licensed GPL-3.0-or-later (LICENSE.txt next to the exe); third-party components keep their own licenses
+  (THIRD-PARTY-NOTICES.md, licenses\).
+- Builds no longer contain the build machine's folder paths (deterministic builds).
+- README: install from the Releases page; the repository is source code only. New "Building from source" section.
+- New command-line check: TarkovPriceOverlay.exe --update-check prints what the update check sees.
+- Includes everything from 1.0.1-1.2.5 (outage handling, fewer "possible match" cards, controls window,
+  auto floor switching, satellite map, …).

@@ -366,12 +366,51 @@ public sealed class SettingsWindow : Window
     }
 
     // ---------------- Troubleshooting ----------------
+    private static string UpdateText(Core.Updates.UpdateCheckResult? r)
+    {
+        var cur = Core.Updates.UpdateChecker.CurrentVersion;
+        if (r == null) return $"This is version {cur}. Not checked yet this launch.";
+        return r.Status switch
+        {
+            Core.Updates.UpdateStatus.Available => $"Version {r.Latest} is available (you have {cur}). Use Download on the main window, or Open releases page.",
+            Core.Updates.UpdateStatus.Skipped => $"Version {r.Latest} is available, but you chose to skip it (you have {cur}).",
+            Core.Updates.UpdateStatus.UpToDate => $"You're up to date ({cur}; latest release {r.Latest}).",
+            Core.Updates.UpdateStatus.Disabled => $"This is version {cur}. The update check is off.",
+            _ => $"This is version {cur}. Couldn't check: {r.Detail}.",
+        };
+    }
+
     private UIElement TroubleshootingPage()
     {
         var p = new StackPanel();
+        var s0 = _h.Services.Settings;
         p.Children.Add(Heading("Prices", first: true));
         p.Children.Add(_dataState);
         p.Children.Add(Ui.Row(Ui.Button("Refresh prices now", async (_, _) => await _h.Services.Catalog.RefreshNowAsync())));
+        // 1.2.6: update check
+        p.Children.Add(Heading("Updates"));
+        var upd = Check("Check for updates on launch (asks GitHub for the latest release at most every 6 h; never downloads or installs anything)", s0.CheckForUpdates);
+        var updState = Ui.Text(UpdateText(_h.Services.UpdateResult), 11, Theme.Muted, wrap: true);
+        upd.Checked += (_, _) => { s0.CheckForUpdates = true; Saved("update check = on"); };
+        upd.Unchecked += (_, _) => { s0.CheckForUpdates = false; Saved("update check = off"); };
+        p.Children.Add(upd);
+        p.Children.Add(updState);
+        Action<Core.Updates.UpdateCheckResult> onUpd = r => Dispatcher.BeginInvoke(() => updState.Text = UpdateText(r));
+        _h.Services.UpdateResultChanged += onUpd;
+        Closed += (_, _) => _h.Services.UpdateResultChanged -= onUpd;
+        p.Children.Add(Ui.Row(
+            Ui.Button("Check now", async (_, _) =>
+            {
+                if (!s0.CheckForUpdates) { updState.Text = "Turn on the update check first."; return; }
+                updState.Text = "Checking…";
+                await _h.Services.CheckForUpdatesAsync(force: true);
+            }, "Ask GitHub now (ignores the 6 h cache)"),
+            Ui.Button("Open releases page", (_, _) => LinkLauncher.OpenRelease(Core.Updates.UpdateChecker.ReleasesPage), "All versions and downloads on GitHub"),
+            Ui.Button("Show skipped version again", (_, _) =>
+            {
+                s0.SkippedUpdateVersion = null; Saved("update skip cleared");
+                updState.Text = "Skipped version cleared. Click Check now to look again.";
+            }, "Undo \"Skip this version\" on the update banner")));
         p.Children.Add(Heading("Tarkov's monitor (Graphics.ini)"));
         p.Children.Add(Ui.Text(TarkovDisplayText(), 11, Theme.Muted, wrap: true));
         p.Children.Add(Heading("Text reading (OCR)"));

@@ -22,6 +22,7 @@ public static class Program
     public static int Main(string[] args)
     {
         if (args.Contains("--smoke-test")) return Cli(() => SmokeTest());
+        if (args.Contains("--update-check")) return Cli(() => UpdateCheckCli());
         int di = Array.IndexOf(args, "--diagnose");
         if (di >= 0) return Cli(() => Diagnose(args, di));
         if (args.Contains("--map-ui-preview")) return Cli(() => Map.MapUiPreview.Run(args));
@@ -180,6 +181,16 @@ public static class Program
     /// availability, and the VC++ runtime. Works from any working directory. Exit 0 = all good, 1 = bundled
     /// component broken, 2 = only Windows OCR unavailable (Tesseract fallback still works).
     /// </summary>
+    /// <summary>1.2.6: --update-check prints what the launch check would say (no cache, nothing written).</summary>
+    private static int UpdateCheckCli()
+    {
+        var u = new TarkovOverlay.Core.Updates.UpdateChecker(cacheFile: null);
+        var r = u.CheckAsync(enabled: true, skippedVersion: null, force: true).GetAwaiter().GetResult();
+        Console.WriteLine($"Tarkov Price Overlay update check · this version {r.Current} · URL {u.Api}");
+        Console.WriteLine($"RESULT: {r.Status} · latest {r.Latest?.ToString() ?? "?"} · {r.Detail} · page {r.Url}");
+        return r.Status is TarkovOverlay.Core.Updates.UpdateStatus.UpToDate or TarkovOverlay.Core.Updates.UpdateStatus.Available ? 0 : 2;
+    }
+
     private static int SmokeTest()
     {
         var baseDir = AppContext.BaseDirectory;

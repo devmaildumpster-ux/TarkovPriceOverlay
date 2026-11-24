@@ -119,6 +119,7 @@ public static class ControlsHelp
                 new ControlRow("Pop out card / Load price history / Wiki / tarkov.dev", "Buttons under the item card in the main window."),
                 new ControlRow("Popped-out card", "Drag to move; double-click or Esc closes it."),
                 new ControlRow("− / + / ×", "Tracked items: one handed in, one more, stop tracking."),
+                new ControlRow("Update available: Download / Skip this version / ×", "Shows under the top bar when a newer version is on GitHub. Download opens the release page in your browser (nothing installs by itself); Skip hides that version; × hides it until next launch. Turn the check off in Settings… › Troubleshooting › Updates."),
             }),
             new ControlSection("Tray icon (when Minimize to tray is on)", new[]
             {

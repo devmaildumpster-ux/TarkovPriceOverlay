@@ -3,11 +3,12 @@
 What's coming to Tarkov Price Overlay. No dates, just what's being worked on and what's planned next.
 Ideas and feedback are welcome: open an issue.
 
-## In progress
+## Done
 
-- **Update check on launch + GitHub Releases.** When the app starts, it checks the latest release on GitHub and
-  shows a small "Update available" note with a download link if there's a newer version. It never installs
-  anything by itself and stays quiet when you're offline. New versions will be published as GitHub Releases.
+- **Update check on launch + GitHub Releases** (1.2.6). When the app starts, it checks the latest release on GitHub
+  and shows a small "Update available" strip with a Download button if there's a newer version. It never installs
+  anything by itself and stays quiet when you're offline. New versions are published as
+  [GitHub Releases](https://github.com/devmaildumpster-ux/TarkovPriceOverlay/releases). *Status: Done*
 
 ## Planned
 

@@ -6,6 +6,7 @@ using TarkovOverlay.Core.Presentation;
 using TarkovOverlay.Core.Progress;
 using TarkovOverlay.Core.Recognition;
 using TarkovOverlay.Core.Settings;
+using TarkovOverlay.Core.Updates;
 using TarkovOverlay.Ocr.Tesseract;
 
 namespace TarkovOverlay.App.Services;
@@ -31,6 +32,39 @@ public sealed class AppServices : IDisposable
     public HideoutProgressStore Hideout { get; }
     /// <summary>1.2.0: quest completion (the one in-app quest tracker, Map › Quests…) + hideout levels for the card.</summary>
     public IProgressView Progress { get; }
+
+    /// <summary>1.2.6: GitHub release check (launch, 6 h cache) and its latest result.</summary>
+    public UpdateChecker Updates { get; }
+    public UpdateCheckResult? UpdateResult { get; private set; }
+    public event Action<UpdateCheckResult>? UpdateResultChanged;
+
+    /// <summary>Runs the release check off the UI thread; never throws, never takes focus.</summary>
+    public async Task<UpdateCheckResult> CheckForUpdatesAsync(bool force = false)
+    {
+        bool enabled = Settings.CheckForUpdates; string? skipped = Settings.SkippedUpdateVersion;
+        UpdateCheckResult r;
+        try { r = await Task.Run(() => Updates.CheckAsync(enabled, skipped, force: force)).ConfigureAwait(false); }
+        catch (Exception ex)
+        {
+            Log.Write("update check: unexpected " + ex.GetType().Name + ": " + ex.Message);
+            r = new UpdateCheckResult(UpdateStatus.Failed, UpdateChecker.CurrentVersion, null, UpdateChecker.ReleasesPage, ex.Message, false);
+        }
+        UpdateResult = r;
+        UpdateResultChanged?.Invoke(r);
+        return r;
+    }
+
+    /// <summary>"Skip this version": hides the banner until a newer release than <paramref name="v"/> comes out.</summary>
+    public void SkipUpdate(AppVersion v)
+    {
+        Settings.SkippedUpdateVersion = v.ToString(); SaveSoon();
+        Log.Write($"update check: user skipped {v}");
+        if (UpdateResult is { } r && r.Latest is { } l && l.CompareTo(v) == 0)
+        {
+            UpdateResult = r with { Status = UpdateStatus.Skipped };
+            UpdateResultChanged?.Invoke(UpdateResult);
+        }
+    }
 
     /// <summary>The item of the last lookup / selection / search (for the Wiki and tarkov.dev shortcuts).</summary>
     public CatalogItem? LastItem { get; private set; }
@@ -80,6 +114,8 @@ public sealed class AppServices : IDisposable
         Progress = new ProgressView(
             (mode, questId) => Map.MapFeature.Instance?.Progress.For(mode).Get(questId) == TarkovOverlay.Maps.Quests.QuestState.Complete,
             Hideout);
+        Updates = new UpdateChecker(Paths.UpdateCheckFile) { Log = Log.Write };
+        if (Updates.Api != UpdateChecker.LatestApi) Log.Write($"update check: URL overridden by {UpdateChecker.UrlEnv} = {Updates.Api} (test only)");
         _saveDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
         _saveDebounce.Tick += (_, _) => { _saveDebounce.Stop(); SaveNow(); };
     }
