@@ -1,0 +1,19 @@
+# file	scale	cursorX	cursorY	expectedId	nameLines	stackCount(-1 n/a,-2 hidden)	tooltip x	y	w	h
+ulach_cannot_100.ppm.gz	1.0	245	125	5b40e1525acfc4771e1c6611	1	-1	246	127	290	44
+ulach_price_100.ppm.gz	1.0	245	125	5b40e1525acfc4771e1c6611	1	-1	246	127	290	44
+ulach_above_100.ppm.gz	1.0	245	125	5b40e1525acfc4771e1c6611	1	-1	247	78	290	44
+ulach_left_wide_100.ppm.gz	1.0	530	125	5b40e1525acfc4771e1c6611	1	-1	237	127	290	44
+nightforce_offer_100.ppm.gz	1.0	245	125	5aa66be6e5b5b0214e506e97	1	-1	246	127	296	44
+bp_top_100.ppm.gz	1.0	245	125	56dfef82d2720bbd668b4567	1	43	246	127	130	44
+bp_mid_100.ppm.gz	1.0	245	125	56dfef82d2720bbd668b4567	1	-2	246	127	130	44
+bp_mid_pre_100.ppm.gz	1.0	245	125	-	0	120	0	0	0	0
+no_tooltip_100.ppm.gz	1.0	245	125	-	0	-1	0	0	0	0
+ulach_cannot_150.ppm.gz	1.5	367	187	5b40e1525acfc4771e1c6611	1	-1	368	189	447	63
+ulach_price_150.ppm.gz	1.5	367	187	5b40e1525acfc4771e1c6611	1	-1	368	189	447	63
+ulach_above_150.ppm.gz	1.5	367	187	5b40e1525acfc4771e1c6611	1	-1	369	121	447	63
+ulach_left_wide_150.ppm.gz	1.5	795	187	5b40e1525acfc4771e1c6611	1	-1	345	189	447	63
+nightforce_offer_150.ppm.gz	1.5	367	187	5aa66be6e5b5b0214e506e97	1	-1	368	189	456	63
+bp_top_150.ppm.gz	1.5	367	187	56dfef82d2720bbd668b4567	1	43	368	189	200	63
+bp_mid_150.ppm.gz	1.5	367	187	56dfef82d2720bbd668b4567	1	-2	368	189	200	63
+bp_mid_pre_150.ppm.gz	1.5	367	187	-	0	120	0	0	0	0
+no_tooltip_150.ppm.gz	1.5	367	187	-	0	-1	0	0	0	0

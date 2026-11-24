@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9C3E436C-22CD-44CA-9BD1-A39FD5952715}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TarkovOverlay.Core", "src\TarkovOverlay.Core\TarkovOverlay.Core.csproj", "{71E9C1B2-0D91-4C80-AD37-9744CF5DEC64}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TarkovOverlay.Ocr.Tesseract", "src\TarkovOverlay.Ocr.Tesseract\TarkovOverlay.Ocr.Tesseract.csproj", "{CDF5D959-E189-49B4-956B-F54874ED03D2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1337E792-7DAF-4B0C-BE31-FB99F7FEB33B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TarkovOverlay.Tests", "tests\TarkovOverlay.Tests\TarkovOverlay.Tests.csproj", "{BDCFBD39-E936-41FA-9AC5-B96C617D0B36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TarkovOverlay.App", "src\TarkovOverlay.App\TarkovOverlay.App.csproj", "{FB49D864-F99D-4B48-9966-CCF02298B9E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TarkovOverlay.Maps", "src\TarkovOverlay.Maps\TarkovOverlay.Maps.csproj", "{7E28B283-536F-4221-8A61-232D750F4957}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TarkovOverlay.Maps.Tests", "tests\TarkovOverlay.Maps.Tests\TarkovOverlay.Maps.Tests.csproj", "{E17B8416-65FA-4284-A6EB-70F8D8FAA9C7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{71E9C1B2-0D91-4C80-AD37-9744CF5DEC64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71E9C1B2-0D91-4C80-AD37-9744CF5DEC64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71E9C1B2-0D91-4C80-AD37-9744CF5DEC64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71E9C1B2-0D91-4C80-AD37-9744CF5DEC64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDF5D959-E189-49B4-956B-F54874ED03D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDF5D959-E189-49B4-956B-F54874ED03D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDF5D959-E189-49B4-956B-F54874ED03D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDF5D959-E189-49B4-956B-F54874ED03D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDCFBD39-E936-41FA-9AC5-B96C617D0B36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDCFBD39-E936-41FA-9AC5-B96C617D0B36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDCFBD39-E936-41FA-9AC5-B96C617D0B36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDCFBD39-E936-41FA-9AC5-B96C617D0B36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB49D864-F99D-4B48-9966-CCF02298B9E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB49D864-F99D-4B48-9966-CCF02298B9E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB49D864-F99D-4B48-9966-CCF02298B9E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB49D864-F99D-4B48-9966-CCF02298B9E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E28B283-536F-4221-8A61-232D750F4957}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E28B283-536F-4221-8A61-232D750F4957}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E28B283-536F-4221-8A61-232D750F4957}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E28B283-536F-4221-8A61-232D750F4957}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E17B8416-65FA-4284-A6EB-70F8D8FAA9C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E17B8416-65FA-4284-A6EB-70F8D8FAA9C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E17B8416-65FA-4284-A6EB-70F8D8FAA9C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E17B8416-65FA-4284-A6EB-70F8D8FAA9C7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{71E9C1B2-0D91-4C80-AD37-9744CF5DEC64} = {9C3E436C-22CD-44CA-9BD1-A39FD5952715}
+		{CDF5D959-E189-49B4-956B-F54874ED03D2} = {9C3E436C-22CD-44CA-9BD1-A39FD5952715}
+		{BDCFBD39-E936-41FA-9AC5-B96C617D0B36} = {1337E792-7DAF-4B0C-BE31-FB99F7FEB33B}
+		{FB49D864-F99D-4B48-9966-CCF02298B9E9} = {9C3E436C-22CD-44CA-9BD1-A39FD5952715}
+		{7E28B283-536F-4221-8A61-232D750F4957} = {9C3E436C-22CD-44CA-9BD1-A39FD5952715}
+		{E17B8416-65FA-4284-A6EB-70F8D8FAA9C7} = {1337E792-7DAF-4B0C-BE31-FB99F7FEB33B}
+	EndGlobalSection
+EndGlobal

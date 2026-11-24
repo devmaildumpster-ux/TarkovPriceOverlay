@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 1.1.0 map feature: platform-neutral logic (log parsing, transforms, quest/extract filtering, SVG parsing).
+       Windows-only bits (registry, WPF rendering) are guarded or live in the App project. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>TarkovOverlay.Maps</RootNamespace>
+    <AssemblyName>TarkovOverlay.Maps</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="TarkovOverlay.Maps.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TarkovOverlay.Core\TarkovOverlay.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Definitions\maps.fallback.json" LogicalName="TarkovOverlay.Maps.maps.fallback.json" />
+  </ItemGroup>
+</Project>

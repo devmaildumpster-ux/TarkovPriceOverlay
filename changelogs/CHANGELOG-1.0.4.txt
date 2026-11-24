@@ -1,0 +1,26 @@
+Tarkov Price Overlay 1.0.4 (applies over 1.0.0, 1.0.1, 1.0.2 or 1.0.3, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay.
+2. Copy every file in this zip into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination".
+3. Start TarkovPriceOverlay.exe (smoke test header says 1.0.4.0).
+
+FIXES (trader screen showed "Item tooltip not visible")
+- The trader screen's tooltip (slightly lighter ~#1a1a1a box, opening at the pointer tip to the right or
+  above-right) is now found, by keypress and by auto-read on hover.
+- Two-line tooltips: only the first line is used as the item name. Red "The trader cannot buy this item.",
+  gold offers ("₽ 35 118") and grey price lines are ignored for identification.
+- Price tags ("₽ 7578") and check marks on items are not mistaken for a tooltip or a stack count.
+- A mouse pointer captured at the tooltip corner can't merge the tooltip into item art or be read as a letter.
+- Stack counts: the inventory grid finder ignores price-tag and icon edges; a number partly covered by the
+  tooltip is reported "hidden", never read short (e.g. "1" of "120").
+- With auto-read on, the stack count is read from a frame taken while the mouse rests, before the tooltip
+  appears, so the trader screen's tooltip can't hide it.
+
+NEW
+- Trader screen: when the gold offer line reads cleanly, the card's first row is
+  "This trader offers ₽35,118" (left out if unclear or OCR engines disagree).
+- Includes 1.0.3 (auto-read, backtick expand), 1.0.2 (stack counts) and 1.0.1 (test card, log).
+Log: %LOCALAPPDATA%\TarkovPriceOverlay\logs\overlay.log (lookups now log the offer and title/second-line split)

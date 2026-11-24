@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows-specific TFM: the 10.0.19041 suffix provides the WinRT projection for Windows.Media.Ocr -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <AssemblyName>TarkovPriceOverlay</AssemblyName>
+    <RootNamespace>TarkovOverlay.App</RootNamespace>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Direct reference so the package's build targets copy x64\tesseract55.dll and x64\leptonica-1.85.0.dll -->
+    <PackageReference Include="TesseractOCR" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TarkovOverlay.Core\TarkovOverlay.Core.csproj" />
+    <ProjectReference Include="..\TarkovOverlay.Ocr.Tesseract\TarkovOverlay.Ocr.Tesseract.csproj" />
+    <ProjectReference Include="..\TarkovOverlay.Maps\TarkovOverlay.Maps.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\third_party\**\*" Link="licenses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\LICENSE" Link="LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\README.md" Link="README.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\CONTROLS.txt" Link="CONTROLS.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\tests\fixtures\ocr\vpo209_100.ppm.gz" LogicalName="TarkovOverlay.App.smoke_sample.ppm.gz" />
+  </ItemGroup>
+  <!-- Only the x64 native Tesseract binaries are shipped (the app is x64-only). -->
+  <Target Name="DropX86TesseractNatives" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <None Remove="@(None)" Condition="$([System.String]::Copy('%(None.Link)').StartsWith('x86'))" />
+    </ItemGroup>
+  </Target>
+  <!-- Belt and braces: native x86 copies can also flow in through the Ocr.Tesseract project reference. -->
+  <Target Name="RemoveX86NativesAfterBuild" AfterTargets="Build">
+    <RemoveDir Directories="$(OutDir)x86" />
+  </Target>
+  <Target Name="RemoveX86NativesAfterPublish" AfterTargets="Publish">
+    <RemoveDir Directories="$(PublishDir)x86" />
+  </Target>
+</Project>

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>TarkovOverlay.Ocr.Tesseract</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="TesseractOCR" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TarkovOverlay.Core\TarkovOverlay.Core.csproj" />
+  </ItemGroup>
+  <!-- Pinned English LSTM model from tessdata_fast (commit 87416418657359cb625c412a48b6e1d6d41c29bd) -->
+  <ItemGroup>
+    <None Include="..\..\assets\tessdata\eng.traineddata" Link="tessdata\eng.traineddata" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

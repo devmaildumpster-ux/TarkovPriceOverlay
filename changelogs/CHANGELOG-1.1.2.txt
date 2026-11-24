@@ -1,0 +1,42 @@
+Tarkov Price Overlay 1.1.2 (applies over 1.0.0 – 1.1.1, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay.
+2. Copy every file and folder in this zip (including "licenses") into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination". Copy everything, not just the exe.
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.1.2.0).
+
+FIX (map covered with 54 quest pins)
+- Cause: 1.1.0/1.1.1 drew every quest you *could* take on the map (unlocked by its prerequisites, not done),
+  not just the ones you're doing. With a fresh tracker that's every starting quest: 54 on Customs. The
+  checkboxes under "Quests on this map" were a hide list, all ticked, with no bulk button.
+- Now only the quests you pick are drawn. Nothing picked = no quest pins (there is no "show all" fallback).
+  Quests you start in the game (or mark active / "I'm on this quest") are picked automatically and drop off
+  when finished or failed; untick any you don't want and it stays unticked.
+- Upgrading: your picks start as the quests marked Active in the tracker (minus any you had hidden), never the
+  54 available ones. Quest progress itself is not changed.
+- Map panel › Quests on this map: Deselect all, Only my active quests, Quests…; checkboxes are now "show"
+  (unticked by default) and the header says "N picked of M". The toolbar shows "Quests (N)".
+- Quests window: new "Map" checkbox column, and at the top: Deselect all (every trader, every map),
+  Deselect shown / Select shown (only the list as filtered by trader, search, status and the new
+  "<Map> only" checkbox), live counts "On map: N (n on Customs) · Active: K", and an "On map" status filter.
+  Every change redraws the map at once and is saved.
+- Opt-in browse mode: map › More ▾ › "Browse: also show every available quest" (off by default) replaces
+  "Only quests I've started".
+
+ALSO
+- Screenshots folder: if none of the usual places exists, the app also looks for
+  <drive>:\Documents\Escape from Tarkov\Screenshots and <drive>:\Users\<you>\Documents\... on every fixed
+  drive, so X:\Documents\Escape from Tarkov\Screenshots is found by itself.
+- Includes everything from 1.0.1-1.1.1.
+
+TEST STEPS
+1. Start the app with Customs shown: the map has no quest pins unless you have active quests; the toolbar
+   says "Quests (N)".
+2. Quests… › Deselect all: "On map: 0", and the map has 0 quest pins straight away.
+3. Tick "Customs only" (the map you have open), tick the Map box of 2-3 quests you're running: only those
+   appear on the map. Try Select shown / Deselect shown with a trader picked.
+4. Close and reopen the app: the same quests are still picked.
+5. More ▾ › Test position from latest screenshot should show the folder X:\Documents\Escape from Tarkov\
+   Screenshots (or whatever Windows reports as Documents).

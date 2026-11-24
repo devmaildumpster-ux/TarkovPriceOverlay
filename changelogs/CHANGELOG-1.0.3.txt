@@ -1,0 +1,21 @@
+Tarkov Price Overlay 1.0.3 (applies over 1.0.0, 1.0.1 or 1.0.2, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay.
+2. Copy every file in this zip into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination".
+3. Start TarkovPriceOverlay.exe (smoke test header says 1.0.3.0).
+
+CHANGES
+- Auto-read on hover (ON by default): rest the mouse on an item in Tarkov; when its name tooltip appears the
+  card shows without a keypress. Only while Tarkov is the foreground window. Rest time (default 350 ms) and
+  tooltip wait (default 600 ms) are adjustable in the main window; untick to go back to keypress-only.
+  Non-item tooltips that match nothing are ignored silently. Decisions are logged.
+- Backtick with a card showing = expand/collapse: every quest first (count needed, FIR), then crafts and
+  barters, then hideout. No new screen read. Long lists use two columns and shrink to fit the screen.
+  Expanded cards stay up to 15 s; moving the mouse still hides them. With no card showing, backtick does a
+  manual lookup as before.
+- New setting "Always show full list on card" (default off).
+- Includes 1.0.2 stack counts and 1.0.1 test card / log.
+Log: %LOCALAPPDATA%\TarkovPriceOverlay\logs\overlay.log

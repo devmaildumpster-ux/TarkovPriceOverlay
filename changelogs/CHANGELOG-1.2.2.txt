@@ -1,0 +1,42 @@
+Tarkov Price Overlay 1.2.2 (applies over 1.0.0 – 1.2.1, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay (if "Minimize to tray" is on: right-click the tray icon › Quit).
+2. Copy every file and folder in this zip (including "licenses") into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination". Copy everything, not just the exe.
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.2.2.0).
+   Settings, tracked items, quest progress and map settings are kept.
+
+NEW: THE MAP SWITCHES FLOORS FROM YOUR SCREENSHOT
+- Tarkov puts your height (y) in each screenshot's file name. The map now uses it, together with tarkov.dev's
+  floor outlines ("extents"), to show the floor you're on, the same way tarkov.dev picks a floor for a marker:
+  height from the bottom of the band up to (not including) the top, inside one of the floor's boxes, and the
+  first floor in tarkov.dev's order wins. Anywhere else is the main map.
+- Underground: Reserve Bunkers (storage, command bunkers, D2, dome tunnels, E1), Customs Underground (ZB-1011,
+  ZB-1012, ZB-013, old gas station, switch and boiler basements), Factory Tunnels, Ground Zero Garage and
+  underpass, Streets Underground (incl. the centre parking and Concordia garage), Shoreline Underground (resort
+  west wing and admin basements), Labs Technical, Icebreaker lower decks.
+- Upper floors: Customs dorms / boiler / warehouse 17 / oil rig floors, Reserve buildings and the dome, Factory,
+  Ground Zero, Streets, Shoreline resort, Interchange mall, Labs Second Level, Icebreaker decks.
+- Take a screenshot in a bunker → the Floor box changes to "Bunkers" and a short "Layer: Bunkers" hint shows.
+  Back on the surface → it goes back to Main, and back to the satellite picture if you use satellite.
+  Floors tarkov.dev only has as a drawing say so: "Layer: Underground (vector only)".
+- Picking a floor yourself in the Floor box is kept until your next screenshot.
+- Works with the map docked or popped out. It never activates or focuses the overlay, so Tarkov keeps the keyboard.
+- Settings… › Map & Screenshots › "Auto-switch map layer on screenshot":
+  All floors & underground (default) · Underground only · Off (manual).
+  "Map › Test position from latest screenshot" also switches the floor.
+
+ALSO
+- maps.json fallback now keeps tarkov.dev's floor outlines (it is used only when tarkov.dev can't be reached;
+  the downloaded maps.json already had them).
+- Includes everything from 1.0.1-1.2.1.
+
+TEST STEPS
+1. Open Reserve, go into a bunker in raid and press your screenshot key: the Floor box says "Bunkers",
+   the hint says "Layer: Bunkers" and your dot is on the bunker drawing.
+2. Go back up and take another screenshot: the floor goes back to Main (satellite).
+3. Pick "3rd Floor" yourself: it stays until the next screenshot.
+4. Settings… › Map & Screenshots: set "Underground only": climbing a building no longer changes the floor,
+   bunkers still do. "Off (manual)": nothing changes by itself.

@@ -1,0 +1,51 @@
+Tarkov Price Overlay 1.2.0 (applies over 1.0.0 – 1.1.4, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay (if "Minimize to tray" is on later: right-click the tray icon › Quit).
+2. Copy every file and folder in this zip (including "licenses") into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination". Copy everything, not just the exe.
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.2.0.0).
+   Your settings, tracked items, quest progress and map settings are kept. Every new option starts at its
+   default (below), so the card looks the same until you change something.
+
+NEW (ideas from RatScanner)
+1. Quest & hideout progress on the card
+   - Quests you've marked Done in Map › Quests… (the same quest tracker the map uses, no second list) and
+     hideout levels you've built are left off the card and the main window. The card says
+     "N quest/hideout uses already done · hidden". Nothing is hidden until you mark something.
+   - New Hideout… window (Map › Hideout…, or Settings… › Hideout levels…): set each station's level per game
+     mode; each row shows what the next level needs. Saved in %LOCALAPPDATA%\TarkovPriceOverlay\hideout-progress.json.
+   - FIR counts in the section titles ("Quests · 12 needed · all FIR", "Hideout · 5 total · 2 FIR").
+   - KAPPA badge on items a Kappa-required quest still needs (tarkov.dev's kappaRequired flag: Collector and
+     its chain). Quest rows needed for Kappa say "Kappa".
+   - Settings… › Overlay & Card: "Filter needs by my quest & hideout progress", "Show non-FIR needs",
+     "Kappa badge" (all on).
+2. PvP / PvE follows the game
+   - When Tarkov's log says "Session mode: pve / regular / pvpseason" (written when the game connects), the
+     app switches prices, cards and the map to that mode and logs "mode auto-detect: …" in overlay.log.
+     Picking a mode yourself still works. Off switch: Settings… › "Auto-detect PvP / PvE from Tarkov's logs".
+3. Wiki / tarkov.dev
+   - Wiki and tarkov.dev buttons on the main window's detail card and on the search bar's card.
+   - Shortcuts for the last item looked up (card, main window selection or search result):
+     Ctrl+Alt+W = Tarkov Wiki, Ctrl+Alt+D = tarkov.dev. Each can be turned off, re-recorded or cleared in
+     Settings…. Links come from tarkov.dev's feed and only https links to those two sites are opened.
+     If another program already uses a combination, Settings… says so and the main shortcut is unaffected.
+4. In-game search bar (Alt+`)
+   - Opens a bar at the top of the monitor Tarkov runs on. Type a name or shorthand: live matches with flea,
+     best trader and per-slot value. ↑↓ + Enter (or double-click) opens the full card with Wiki / tarkov.dev.
+     Esc or clicking elsewhere closes it and gives focus back to the game. Shortcut is configurable.
+5. Card options
+   - Show/hide card fields: Flea, Flea net, Best trader, Buy-back, Per slot, Stack / full-stack value,
+     Quest & hideout needs, Crafts & barters, Kappa badge.
+   - Card opacity 40–100 % (default 95 %), applies immediately.
+   - Minimize to the system tray (off by default): the tray icon opens the window; right-click for
+     Open / Settings… / Quit. Closing the window still quits the app completely.
+6. Tarkov's Graphics.ini
+   - The app reads %AppData%\Battlestate Games\Escape From Tarkov\Settings\Graphics.ini (read-only, shared)
+     to find Tarkov's monitor; used to place the search bar. Settings… › Troubleshooting shows which monitor
+     and resolution it found, or says the file wasn't found (then the primary monitor is used).
+
+UNCHANGED
+- Cards, hover auto-read, the backtick shortcut, map, quests, extracts, screenshots and clean exit work as in
+  1.1.4. The tray icon is removed on exit and never keeps the app running.

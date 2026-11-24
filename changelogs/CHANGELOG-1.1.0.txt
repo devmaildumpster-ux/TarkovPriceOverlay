@@ -1,0 +1,52 @@
+Tarkov Price Overlay 1.1.0 (applies over 1.0.0 – 1.0.7, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay.
+2. Copy every file and folder in this zip (including "licenses") into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination". (TarkovOverlay.Maps.dll is new and deps.json changed:
+   copy everything, not just the exe.)
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.1.0.0).
+
+NEW: MAP + QUESTS IN THE MAIN WINDOW
+- The map fills the empty space under the settings in the left column and grows with the window. Drag the
+  divider to its right to widen it. Nothing is drawn over the game, and Borderless isn't needed for the map.
+- Toolbar: map picker (+ floor for Labs/Interchange/etc.), Auto-follow, Exits, Quests, Me, Pop out,
+  More ▾ (PMC/Scav side, transits, only started quests, area names, fit, settings), Quests…
+- Auto-follow: the app reads Tarkov's own log files and switches to the raid's map when Tarkov loads it.
+  It also knows PvP/PvE, PMC/Scav and raid start/end. The game folder is found automatically; if not, set
+  it in More ▾ › Map settings… (folder that contains EscapeFromTarkov.exe).
+- Exits for your side (PMC green, Scav yellow, both blue, co-op purple, transit cyan). A white dot means a
+  requirement: hover to see it (paid ₽, flare, switch, key, paracord…).
+- Quest spots for quests that are unlocked and not done on this map (filled = spot, hollow = one of several
+  possible spots, ring = not accepted yet). Hover for the objective. Tick/untick under "Quests on this map".
+- Built-in quest tracker (Quests…): search, per trader, Kappa column, mark done/active/failed,
+  "I'm on this quest" marks everything before it done. Kept separately for PvP and PvE. It updates itself
+  from the "quest started/completed/failed" lines Tarkov writes to its log while the app runs, and
+  "Import from game logs" reads older logs once. TarkovTracker is optional and read-only; its token is
+  saved only on this PC.
+- Your position: press PrtScn in raid. Tarkov puts your position in the screenshot file name; the map
+  shows a red arrow with "N min ago". Deleting screenshots after reading is optional (off by default).
+- Pop out: the map moves to its own normal window that remembers its monitor and size. F11 or Fullscreen =
+  borderless fullscreen on that monitor, Esc leaves fullscreen. "Back to main window" docks it again.
+- Experimental (off): Map settings › read the exit list when you press O (dims exits that aren't yours).
+- Map data/drawings come from tarkov.dev; each map downloads once (0.3–2 MB) and is cached in
+  %LOCALAPPDATA%\TarkovPriceOverlay\maps. Nothing map-related runs until a map is shown.
+- Price lookups, the card and its OCR are unchanged. Includes everything from 1.0.1-1.0.7.
+
+TEST STEPS
+1. Start the app. The left column shows the map area under the settings; after a few seconds it says
+   "Pick a map" (first run) or shows your last map. Pick Customs: exits and quest spots appear.
+   Wheel = zoom, drag = pan, double-click = fit. Hover an exit with a white dot to read its requirement.
+2. Maximise the main window: the map grows. Drag the divider right of the map: map widens, the detail card
+   column narrows, search column stays the same.
+3. Click Quests…: open a trader, select the quest you're on, "I'm on this quest" (earlier ones become Done).
+   Quest spots on the map update. Try "Import from game logs" too.
+4. Pop out: the map moves to its own window, the main window shows "Bring it back here". Move it to your
+   second monitor, press F11 (fullscreen on that monitor), Esc (back). Close it and Pop out again: it opens
+   on the same monitor with the same size.
+5. Start Tarkov and a raid: the map switches to the raid's map once it loads (status line shows map,
+   PMC/Scav, PvP/PvE). In raid press PrtScn: a red arrow appears where you are within ~1 s.
+6. Finish or start a quest: the tracker marks it without you touching anything.
+7. If the map never switches: More ▾ › Map settings… shows whether the game folder/logs were found.
+   overlay.log has lines starting "map:".

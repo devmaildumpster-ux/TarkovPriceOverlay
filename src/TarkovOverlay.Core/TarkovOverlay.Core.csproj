@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>TarkovOverlay.Core</RootNamespace>
+    <AssemblyName>TarkovOverlay.Core</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="TarkovOverlay.Tests" />
+  </ItemGroup>
+</Project>

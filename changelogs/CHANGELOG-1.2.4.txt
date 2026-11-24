@@ -1,0 +1,42 @@
+Tarkov Price Overlay 1.2.4 (applies over 1.0.0 – 1.2.3, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay (if "Minimize to tray" is on: right-click the tray icon › Quit).
+2. Copy every file and folder in this zip (including "licenses") into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination". Copy everything, not just the exe.
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.2.4.0).
+   Settings, tracked items, quest progress and map settings are kept.
+
+FIXED: "POSSIBLE MATCH" WITH NO PRICE (e.g. AR-10 KAC QDC 7.62x51 Flash Suppressor Kit)
+Why it happened: Tarkov wraps long names onto two lines. The OCR either lost the second line
+("AR-10 KAC QDC 7.62x51 Flash") or misread a look-alike letter ("7.62x5l", "ODC"). The matcher then only had a
+"possible" match, and a weaker possible match showed the name with no price at all.
+- Look-alike letters (l/I/1, O/0/Q, S/5, B/8, Z/2, G/6, rn/m) count as the same letter when the result can only
+  be one catalog item. Such reads now show the full card.
+- The two name lines are also tried in the other order if the first order doesn't match.
+- The first line of a two-line name (second line lost) gives a "Possible match" for the one item it starts.
+- Every "Possible match" card shows Flea and Trader values, why the read wasn't exact, and up to two other items
+  it might be, with prices. It's still marked "Possible match" — check before you sell.
+- Safety: if the tooltip has two name lines but only the first was read and that line is itself an item name
+  ("ELCAN SpecterDR 1x/4x scope" vs "… scope (FDE)"), it's a possible match, never a confident card.
+- overlay.log: each lookup line now lists every OCR pass ("Windows@2× [line 1 / line 2] → kind (reason)") and the
+  number of title lines found. If you still get a possible match, send those lines.
+
+WHOLE-CATALOG CHECK (all ~5,000 tarkov.dev PvE items, misread on purpose)
+  misread class                    before (verified)     after (verified)
+  "1" read as "l" in numbers       83 / 1432             1432 / 1432
+  "Q" read as "O"                  0 / 84                84 / 84
+  trailing "1" read as "I"         14 / 352              352 / 352
+  "0" read as "O" in numbers       1147 / 1238           1238 / 1238
+  two lines in the wrong order     0 / 4490              4490 / 4490
+  second line lost                 confident wrong item 195 → 0; right item shown first or in the list for 96%
+  one genuinely wrong letter       never verified (possible match / list only)
+
+ALSO
+- Includes everything from 1.0.1-1.2.3 (controls window, auto floor switching, satellite map, …).
+
+TEST STEPS
+1. Hover the AR-10 KAC QDC 7.62x51 Flash Suppressor Kit (or any long two-line name): full card with prices.
+2. If a card says "Possible match", it now shows Flea/Trader and a short reason; open %LOCALAPPDATA%\
+   TarkovPriceOverlay\overlay.log and look for the last "lookup" line — it lists what OCR read.

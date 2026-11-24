@@ -1,0 +1,78 @@
+﻿Tarkov Price Overlay 1.2.5 — Controls & hotkeys (default keys)
+In the app: the "? Controls" button at the top shows this list with YOUR current keys.
+Shortcuts can be changed or cleared in Settings… (Overlay & Card: price shortcut on/off; Overlay & Card / Map & Screenshots: Record… / Clear / Default).
+Run Tarkov in Borderless or Windowed mode (cards can't draw over exclusive Fullscreen).
+
+PRICE CARDS (IN GAME)
+  Rest the mouse on an item     Auto-read on hover (on by default): when Tarkov's name tooltip appears (after
+                                350 ms), the price card shows by itself.
+  ` (backtick)                  Price shortcut: hover an item until its name tooltip shows, then press it for
+                                the price card next to the mouse.
+  Same key again                With a card showing (mouse still): expand / collapse the full list of quests,
+                                crafts, barters and hideout needs.
+  Ctrl+` / Ctrl+Shift+F8        Used as the price shortcut instead of the backtick if another app already has
+                                it (the top bar shows which one you got).
+  Move the mouse                Hides the card (past 6 px). It also hides after 7 s (15 s when expanded). The
+                                card never takes focus; clicks go through it.
+  Ctrl+Alt+W                    Open the Tarkov Wiki page of the last item looked up.
+  Ctrl+Alt+D                    Open the last item looked up on tarkov.dev.
+
+QUICK SEARCH BAR (IN GAME)
+  Alt+`                         Open / close the search bar over the game.
+  Type                          Filter by item name or short name.
+  ↑ / ↓                         Pick a result.
+  Enter or double-click         Show that item's price card.
+  Esc                           Close the bar and give the keyboard back to the game.
+  Click outside the bar         Closes it.
+
+MAP
+  Ctrl+Alt+M                    Switch the map Satellite ↔ Vector from in game (never takes focus; docked or
+                                popped out).
+  Satellite / Vector button     Same switch on the map toolbar (greyed out on maps that have only one style).
+  Mouse wheel                   Zoom in / out at the mouse.
+  Left-drag                     Pan the map.
+  Double-click the map          Fit the whole map (also More ▾ › Fit whole map).
+  Hover a pin                   Show the exit / transit / quest spot name and details.
+  Map box                       Pick a map. Auto-follow (tick box) switches to the raid's map by itself.
+  Floor box                     Pick a floor / underground level. Auto layer switching from screenshots: All
+                                floors & underground (Settings… › Map & Screenshots); a floor you pick stays
+                                until your next screenshot.
+  Exits / Quests / Me           Show or hide exits, your picked quests and your position dot.
+  Pop out / Dock                Open the map in its own window (remembers monitor and size), or put it back.
+  F11 or Fullscreen             In the popped-out map: borderless fullscreen on that monitor.
+  Esc                           Leave fullscreen (popped-out map).
+
+SCREENSHOTS & POSITION (IN RAID)
+  PrtScn                        Tarkov's own Screenshot key (Tarkov Settings › Controls). Each screenshot puts
+                                your dot and facing on the map, and switches the floor. Bind it if nothing
+                                happens.
+  More ▾ › Test position from latest screenshot
+                                Re-reads the newest screenshot and says what happened (folder, file,
+                                position).
+  O                             Experimental exit-list reader (off by default; Settings… › Map & Screenshots):
+                                after you press O in raid it reads the exit list and dims exits that aren't on
+                                it.
+
+BUTTONS, MENUS & WINDOWS
+  ? Controls                    This list (also More ▾, the tray menu and Settings…). Shows your current keys.
+  Settings…                     Settings (also click the PvP/PvE badge): Overlay & Card, Map & Screenshots,
+                                Troubleshooting. Changes apply right away.
+  Settings… › Record… / Clear / Default
+                                Change a shortcut: click Record… and press the new keys (Esc cancels), Clear
+                                to turn it off, Default to restore it.
+  Refresh prices                Download fresh prices now.
+  More ▾ (map)                  Exits for auto / PMC / Scav, Show transits, Browse all quests, Area names, Fit
+                                whole map, Quest tracker…, Hideout tracker…, Test position…, Map settings…,
+                                Controls & hotkeys.
+  Quests…                       Quest tracker. Double-click or Space marks a quest done / not done.
+  Hideout…                      Hideout tracker: the station levels you've built (cards skip those needs).
+  Deselect all / Only my active quests
+                                Quick quest-pin choices under the map.
+  Pop out card / Load price history / Wiki / tarkov.dev
+                                Buttons under the item card in the main window.
+  Popped-out card               Drag to move; double-click or Esc closes it.
+  − / + / ×                     Tracked items: one handed in, one more, stop tracking.
+
+TRAY ICON (WHEN MINIMIZE TO TRAY IS ON)
+  Click / double-click          Show the main window.
+  Right-click                   Menu: Open, Settings…, Controls & hotkeys, Quit.

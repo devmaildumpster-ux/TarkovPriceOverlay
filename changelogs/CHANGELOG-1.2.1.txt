@@ -1,0 +1,46 @@
+Tarkov Price Overlay 1.2.1 (applies over 1.0.0 – 1.2.0, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay (if "Minimize to tray" is on: right-click the tray icon › Quit).
+2. Copy every file and folder in this zip (including "licenses") into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination". Copy everything, not just the exe.
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.2.1.0).
+   Settings, tracked items, quest progress and map settings are kept.
+
+NEW: SATELLITE MAP
+- The map now uses tarkov.dev's rendered satellite tiles by default wherever they exist:
+  Customs, Woods, Shoreline, Interchange, Reserve, Factory, Ground Zero, The Lab, The Labyrinth, Icebreaker.
+  Streets of Tarkov, Lighthouse and Terminal only have the vector drawing, so they stay vector.
+- Sharper: the satellite picture is built at tile zoom 4 (about 4000 px across; 1.2.0 used about 2000 px),
+  e.g. Customs 4352×2560, Woods 4352×4352, Ground Zero 3072×4096. Icebreaker uses zoom 3 (2304×4096).
+  The first open of a map downloads its tiles (5–25 MB, about 5–8 s); after that it opens from the cache.
+- Floors: in Satellite the floor's tiles are drawn over the dimmed ground level (like tarkov.dev). A floor that
+  exists in only one style is shown in that style (Interchange/Shoreline/Streets floors: vector; Customs 4th
+  floor and Reserve's upper floors: satellite).
+- Exits, transits, quest pins, area names and your dot use the same projection in both styles. Checked against
+  the pictures on Customs and Ground Zero: buildings, roads and pins line up.
+- Area names and exit labels on the satellite picture sit on dark rounded backdrops so they read well.
+  Credit in the corner: "Map © Tarkov.dev / Shebuka · CC BY-NC-SA 4.0" (author per map).
+
+NEW: SWITCH WITHOUT ALT-TAB
+- Satellite / Vector button on the map toolbar (the same button in the docked map and the pop-out window).
+  On a map that has only one style the button is greyed out and says why (e.g. "Streets of Tarkov is vector-only").
+- Global shortcut Ctrl+Alt+M switches Satellite ↔ Vector from inside the game. It never activates or focuses the
+  overlay, so Tarkov keeps the keyboard, and it works with the map docked or popped out on another monitor.
+  A short hint ("Map: Satellite" / "Map: Vector") shows in the top-left of the map.
+- Settings… › Map & Screenshots: "Default to the satellite map where available" (on) and the shortcut
+  (Record… / Clear / Default). The button's tooltip shows the current shortcut.
+
+ALSO
+- maps.json fallback refreshed from tarkov.dev (23 Nov 2026), now with the map authors for the credit line.
+- Includes everything from 1.0.1-1.2.0.
+
+TEST STEPS
+1. Open Customs: the map is the satellite picture, the toolbar button says "Satellite".
+2. Zoom into Dorms: trees, roofs and roads are crisp; labels have dark backdrops; exits sit on the gates.
+3. In game, press Ctrl+Alt+M: the map switches to Vector (hint "Map: Vector") and Tarkov keeps focus.
+   Press again: back to Satellite. Pop the map out to the second monitor and try again.
+4. Pick Streets of Tarkov: the button is greyed out; Ctrl+Alt+M shows "Streets of Tarkov is vector-only".
+5. Settings… › Map & Screenshots: untick "Default to the satellite map" → the map switches to Vector and stays
+   that way after a restart.

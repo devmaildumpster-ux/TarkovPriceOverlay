@@ -1,0 +1,22 @@
+Tarkov Price Overlay 1.0.7 (applies over 1.0.0 – 1.0.6, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay (since 1.0.6 it fully exits; if an older copy is still in Task Manager, End task).
+2. Copy every file in this zip into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination".
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.0.7.0).
+
+FIX (hovering a "Chainlet" showed no card)
+- Cause: Tarkov sizes the tooltip to its text, so a short name gives a tiny box (Chainlet ≈ 65×44 px at 100%,
+  Bolts ≈ 61, Awl ≈ 49). The tooltip finder ignored any box narrower than 64 px, so short names were skipped,
+  whether you pressed the key or relied on auto-read. When the tooltip opened right at the pointer, the area
+  under the pointer also counted against a small box's "is it solid dark" test.
+- Now boxes down to ~28 px wide (scaled with Windows display scaling) are accepted; price tags, check marks and
+  empty cells are still rejected by the other checks. The pointer area no longer counts against a small box.
+- Short names still have to match a catalog name exactly. New narrow repair: a first capital read as a digit
+  ("8olts" → Bolts) is fixed only if the result is an exact catalog name.
+- The gold "₽ 3 689" line under a short name is still split off and shown as "This trader offers".
+- New test images: Chainlet, Bolts, Awl, Wrench, Salewa first aid kit, TP-200 TNT brick, above/at the pointer,
+  1 and 2 lines, 100% and 150%.
+- Includes everything from 1.0.1-1.0.6.

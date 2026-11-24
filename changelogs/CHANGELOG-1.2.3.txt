@@ -1,0 +1,29 @@
+Tarkov Price Overlay 1.2.3 (applies over 1.0.0 – 1.2.2, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay (if "Minimize to tray" is on: right-click the tray icon › Quit).
+2. Copy every file and folder in this zip (including "licenses") into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination". Copy everything, not just the exe.
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.2.3.0).
+   Settings, tracked items, quest progress and map settings are kept.
+
+NEW: CONTROLS & HOTKEYS
+- A "Controls & hotkeys" window lists every hotkey, mouse control and button, grouped: price cards, quick search
+  bar, map, screenshots & position, buttons/menus/windows, tray icon.
+- It shows YOUR current keys (gold), "(not set)" for a shortcut you cleared, and which price key Windows gave the
+  app (` or a fallback). Change keys in Settings… (Record… / Clear / Default); the list updates.
+- Open it from: "? Controls" in the top bar, Map › More ▾ › Controls & hotkeys…, the tray menu (right-click ›
+  Controls & hotkeys) and Settings… › Controls & hotkeys… (bottom of the window).
+- It opens by itself once, the first time the app starts (also once after this update), without taking focus.
+- CONTROLS.txt next to TarkovPriceOverlay.exe has the same list with the default keys, for sharing.
+- README: new "Quick start for a new user" and "Controls & hotkeys" sections at the top.
+
+ALSO
+- Includes everything from 1.0.1-1.2.2 (auto floor switching, satellite map, …).
+
+TEST STEPS
+1. Start the app: the Controls & hotkeys window appears once. Close it and restart: it doesn't come back.
+2. Click "? Controls" in the top bar: the list opens; your price key and Alt+` / Ctrl+Alt+W / Ctrl+Alt+D /
+   Ctrl+Alt+M are shown in gold.
+3. Settings… › clear the search bar shortcut, then look at the list again: it says "(not set)".

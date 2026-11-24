@@ -1,0 +1,22 @@
+Tarkov Price Overlay 1.0.5 (applies over 1.0.0 – 1.0.4, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay.
+2. Copy every file in this zip into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination".
+3. Start TarkovPriceOverlay.exe (smoke test header says 1.0.5.0).
+
+FIXES ("Dogtag BEAR" showed "SAME NAME - CHOOSE IN APP" with 24 identical lines)
+- Dogtags (BEAR, USEC, Marked) now get one card: flea and trader RANGE across all tag variants, the base
+  tag's value, and "Value depends on level". The hover tooltip only says "Dogtag BEAR" (the level is only in
+  the inspect window), so the exact variant can't be picked from a hover; the range is shown instead.
+- Other same-name catalog entries are merged into one card with a range when they are all priced within
+  10% of each other, or none has a price (e.g. "Sealed weapon case", 50 entries).
+- When a picker is still needed, each line shows what differs (variant #, flea and trader price) instead of
+  the same name repeated, and the header no longer repeats itself (heading = what to do, title = the name).
+- The main window labels same-name results with "variant #N" and says how many entries share the name.
+- Merged cards expand/collapse with the shortcut like normal cards.
+- Game mode: the catalog follows the mode picked in the main window (default Regular PvP); PvE and PvP
+  entries are never mixed. If you play PvE, keep the mode set to PvE (the card's corner shows the mode).
+- Includes everything from 1.0.1-1.0.4.

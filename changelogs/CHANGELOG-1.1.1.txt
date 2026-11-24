@@ -1,0 +1,43 @@
+Tarkov Price Overlay 1.1.1 (applies over 1.0.0 – 1.1.0, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay.
+2. Copy every file and folder in this zip (including "licenses") into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination". Copy everything, not just the exe.
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.1.1.0).
+
+FIX (no "you are here" marker on the map)
+- Screenshots folder: now found even when Documents is redirected to OneDrive or moved to another drive
+  (Windows' Documents known folder, %OneDrive%\Documents, %USERPROFILE%\OneDrive\Documents,
+  %USERPROFILE%\Documents). If it doesn't exist yet it's checked again every 30 s and picked up as soon as
+  Tarkov creates it. You can still set it by hand in More ▾ › Map settings…, which now shows the folder in use.
+- New screenshots are caught by the folder watcher (created, renamed and changed files) and, while a map is
+  shown, by a 2-second check for new files, in case Windows drops watcher events.
+- File names: accepts more variants (missing "_", extra or missing spaces, decimal commas, .jpg, no "(0)"),
+  always parsed the same way whatever your Windows number format.
+- The marker no longer depends on the map having switched by itself: with no map shown it switches to the
+  raid's map; a map detected from an earlier raid no longer hides it; with Auto-follow off it tells you which
+  map the position is on. It stays until your next screenshot (no 3-hour cut-off), and the last position
+  screenshot (up to 3 h old) is shown again when the app restarts.
+- The marker is bigger: red dot with a black-and-white ring, heading arrow and "You · N min ago". If you pan
+  away, an arrow at the edge of the map points to it.
+- Reads Tarkov's key bindings from its log: the status line warns if no screenshot key is bound or it's bound
+  as "SysReq" (which usually doesn't work).
+- New: More ▾ › Test position from latest screenshot. It re-reads the newest file in the screenshots folder and
+  shows, in a line under the status line, the folder used, the newest file, the position read, whether it was
+  drawn (or why not) and the screenshot key Tarkov reported.
+- overlay.log now records every step with "map:": folders checked, folder watched, each file seen and what was
+  read from it, which map it was used for, where it was drawn (pixel and map bounds) or why not.
+- Includes everything from 1.0.1-1.1.0.
+
+TEST STEPS
+1. Start the overlay, then Tarkov, then a raid (or pick the map you're on).
+2. Press PrtScn in raid. Within ~2 s a red dot with a ring appears and the status line says
+   "You: drawn on <map>".
+3. If not: More ▾ › Test position from latest screenshot, and send the line it shows plus
+   %LOCALAPPDATA%\TarkovPriceOverlay\logs\overlay.log (lines starting "map:").
+4. Also check Documents\Escape from Tarkov\Screenshots (or OneDrive\Documents\...) for a new file named like
+   2026-11-23[14-25]_123.45, 2.34, -56.78_0.0, 0.7, 0.0, 0.7_12.34 (0).png. No new file means Tarkov didn't
+   take the screenshot: check Tarkov's Settings › Controls › Screenshot key and, on Windows 11,
+   Settings › Accessibility › Keyboard › "Use the Print screen key to open screen capture" (turn it off).

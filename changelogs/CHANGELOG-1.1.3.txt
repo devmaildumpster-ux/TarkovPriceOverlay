@@ -1,0 +1,53 @@
+Tarkov Price Overlay 1.1.3 (applies over 1.0.0 – 1.1.2, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay.
+2. Copy every file and folder in this zip (including "licenses") into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination". Copy everything, not just the exe.
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.1.3.0).
+
+NEW (screenshots no longer pile up)
+- Position screenshots are cleaned up automatically. Map › More ▾ › Map settings… › "Position screenshot
+  cleanup":
+    Keep newest 5 (default, on right after the update)
+    Delete right after reading
+    Move to Recycle Bin (keep newest 5, older ones go to the Recycle Bin)
+    Off (keep all)
+  (If you had ticked the old "Delete each position screenshot" box, you get "Delete right after reading".)
+- Safety: only files directly in the screenshots folder whose name is a Tarkov position screenshot
+  (2026-11-23[14-05]_123.4, 5.6, -78.9_..._1.23 (0).png / .jpg) are ever removed, and only after the
+  name has been read. Menu/hideout screenshots without a position, any other file, read-only files and
+  sub-folders are never touched. A file that's still in use is skipped and retried later; nothing crashes.
+- Runs on every new position screenshot and once at start-up, so an existing backlog is trimmed to the
+  newest 5 the first time 1.1.3 starts (older position screenshots are deleted then). overlay.log shows
+  "map: screenshot cleanup ... deleted N ...".
+- Your last position is saved to %LOCALAPPDATA%\TarkovPriceOverlay\maps\last-position.json, so the red dot
+  still shows after a restart (up to 3 h old) even when the screenshot was deleted. "Test position from
+  latest screenshot" reports the cleanup mode and the saved position when the folder is empty.
+
+FIX (Customs exits all yellow / PMC exits missing)
+- In menus the map kept filtering exits by the side guessed for your previous raid. That guess comes from
+  the raid countdown (a PMC countdown before "game started", none for Scav). It isn't reliable in PvE
+  (TarkovMonitor doesn't guess PMC/Scav in PvE either), so it could pick Scav, which showed only the Scav
+  exits, all yellow, and left out Dorms V-Ex, Smuggler's Boat, ZB-1012 and ZB-1013.
+- Side "Auto" now shows every exit in menus and in PvE; it filters by PMC/Scav only during a regular
+  (PvP) raid. Choose PMC or Scav yourself in the map's side menu to filter in PvE.
+- tarkov.dev lists separate PMC and Scav copies of exits both can use (ZB-1011, Crossroads, Trailer Park,
+  Old Gas Station, RUAF Roadblock, Railroad to Reserve...). Those are now one blue "Both" marker instead of
+  a green or yellow one. Green = PMC only, yellow = Scav only.
+- The status line says "all exits", "PMC exits" or "Scav exits"; overlay.log has "map: exit side ...".
+
+ALSO
+- Includes everything from 1.0.1-1.1.2.
+
+TEST STEPS
+1. Start the app. overlay.log: "map: screenshot cleanup: keep newest 5". If you had more than 5 position
+   screenshots, only the 5 newest are left in X:\Documents\Escape from Tarkov\Screenshots. Other files
+   there are untouched.
+2. In menus the Customs map shows every exit: green Dorms V-Ex and Smuggler's Boat, blue ZB-1011 and
+   Crossroads, yellow Scav-only exits. The status line says "all exits".
+3. In raid, press PrtScn a few times: the dot moves and the folder never holds more than 5 position
+   screenshots.
+4. Close and reopen the app: the dot is still there.
+5. Map settings › cleanup "Off (keep all)" › Save: nothing is deleted any more.

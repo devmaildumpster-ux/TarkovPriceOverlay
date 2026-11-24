@@ -1,0 +1,43 @@
+Tarkov Price Overlay 1.1.4 (applies over 1.0.0 – 1.1.3, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay.
+2. Copy every file and folder in this zip (including "licenses") into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination". Copy everything, not just the exe.
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.1.4.0).
+   Your settings, tracked items, quest progress and map settings are kept.
+
+FIX (no card on "Peltor ComTac II headset (OD Green)")
+- Tested on your screenshots: the tooltip is found at every cursor spot around the item, with and without the
+  stash scrolled, and the card fits near the top of the screen. The failure was in reading the name:
+  the OCR reads the "II" in "ComTac II" as "IT" / "Il" / "ll" / "11", and that matched both ComTac II and
+  ComTac V, so it wasn't treated as a sure match.
+  Now a short Roman numeral misread (2–4 characters made of I/l/1/|/!/t next to I/V/X) is repaired,
+  but only when the repaired name is an exact catalog name. "ComTac IT" → ComTac II (verified), "Vl" → VI.
+  A numeral that doesn't exist is never made up ("ComTac lV (OD Green)" still asks you to pick).
+- A slow read (a misread name that needs the second OCR engine takes longer) was thrown away if the mouse
+  drifted more than 2 px while it was being read, so no card showed at all. It now uses the same drift
+  tolerance as the card ("Mouse may drift", default 6 px).
+- Auto-read: if the hover probe saw the tooltip but the lookup's own capture a moment later didn't (tooltip
+  redrawn/faded, scroll), the lookup now uses the probe's frame instead of giving up silently.
+- overlay.log: a hover that finds no tooltip now says why ("closest dark boxes: 273x37 at ... rejected:
+  ..."). If an item still shows no card, send the "auto-read probe" / "auto lookup at" lines.
+
+NEW (Settings… window, cleaner main window)
+- The main window has a slim header: mode badge (PvP / PvE / Season), shortcut, auto-hover on/off with the
+  rest time, price status, Refresh prices, Settings…. Problems (no shortcut, no OCR) show as one warning line.
+- The map now has the whole left column (the option rows above it are gone).
+- Settings… (button, or click the mode badge) — every change applies and saves immediately:
+  Overlay & Card: shortcut on/off (now remembered across restarts), game mode, card size, always show the
+    full list, hide the card on mouse move + drift tolerance, auto-read on hover + rest + tooltip wait,
+    value-colour legend, Borderless note.
+  Map & Screenshots: the former Map settings dialog (game folder, logs, screenshot folder, position
+    screenshot cleanup, auto-switch map, exit-list OCR). Map › More ▾ › Map settings… opens this tab.
+  Troubleshooting: price status + Refresh, OCR status, Test card (in 3 s), Open saved image…, Open log
+    folder, version.
+- Changing the game mode switches prices and cards and, outside a raid, reloads the map's extracts and
+  quest pins for that mode (in a raid the map keeps the raid's mode from the game log).
+
+Everything from 1.1.0–1.1.3 (map, position dot, quest checklist, screenshot cleanup, exit fixes, clean exit)
+is unchanged.

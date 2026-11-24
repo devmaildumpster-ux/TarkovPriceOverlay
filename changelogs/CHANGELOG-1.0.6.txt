@@ -1,0 +1,27 @@
+Tarkov Price Overlay 1.0.6 (applies over 1.0.0 – 1.0.5, self-contained build)
+
+INSTALL
+1. Close Tarkov Price Overlay. If an old copy is still listed in Task Manager (the 1.0.5 bug),
+   end it there first: Task Manager › TarkovPriceOverlay › End task.
+2. Copy every file in this zip into
+   <your install folder>\TarkovPriceOverlay\self-contained
+   and choose "Replace the files in the destination".
+3. Start TarkovPriceOverlay.exe (smoke test header / overlay.log says 1.0.6.0).
+
+FIX (the process stayed in Task Manager after closing the window)
+- Cause: the hidden cursor-card window was created before the main window, and WPF treats the first window
+  created as the app's "main window". The app was set to quit when the main window closed, so it waited for
+  the hidden card window, which never closes. The process stayed idle in the background (0% CPU, ~380 MB).
+- Now closing the main window always quits. It runs these steps in order and logs each one to overlay.log
+  as "shutdown: ...": stop the auto-read poller, stop lookups, close the cursor card, unregister the backtick
+  hotkey, save settings, cancel catalog/price downloads, free Tesseract and the HTTP client, close any
+  pop-out windows, then stop the app. A step that fails is logged and the rest still run.
+- Safety net: if anything still holds the process 3 s after the window closes, it force-exits.
+- There is no tray icon; closing the window = Exit. Logging off or shutting down Windows also quits cleanly.
+
+LOWER MEMORY
+- Tesseract (the backup OCR engine) is no longer loaded at startup when Windows OCR works. It loads on
+  first use and is freed again after 3 idle minutes.
+- Leftover download/parse buffers are released once the catalog has loaded (logged as "memory: ...").
+
+- Includes everything from 1.0.1-1.0.5.
