@@ -9,9 +9,6 @@ It never reads game memory, injects, or sends input to the game.
 
 ## Download & install
 
-**This GitHub repository is source code only.** It has no `self-contained` folder and no `.exe`; those are in the
-release download.
-
 1. Open the **[latest release](https://github.com/devmaildumpster-ux/TarkovPriceOverlay/releases/latest)** and download
    **`TarkovPriceOverlay-win-x64.zip`** (under *Assets*).
 2. Unzip it anywhere, for example `C:\Tools`. Inside you get:
