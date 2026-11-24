@@ -299,7 +299,7 @@ public sealed class MapView : FrameworkElement
         byte a = notListed ? (byte)90 : (byte)255;
         var fill = B(c, a);
         // outline polygon (extract zone) when zoomed in enough to be useful
-        if (x.Outline.Count >= 3 && _scale > 2)
+        if (x.Outline.Count >= 3 && _scale > 2 && !notListed) // 1.2.7: no zone box for exits not on your list
         {
             var g = new StreamGeometry();
             using (var ctx = g.Open())

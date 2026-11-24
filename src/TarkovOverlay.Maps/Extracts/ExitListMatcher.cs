@@ -4,7 +4,7 @@ using System.Text;
 namespace TarkovOverlay.Maps.Extracts;
 
 /// <summary>
-/// Matches the extract names Tarkov lists after a double-tap of O (read with OCR) to the map's extracts.
+/// Matches the extract names Tarkov lists after pressing O (read with OCR) to the map's extracts.
 /// Pure string logic; the capture/OCR side lives in the app.
 /// </summary>
 public static class ExitListMatcher
@@ -19,23 +19,37 @@ public static class ExitListMatcher
         {
             var line = Normalize(StripDecorations(raw));
             if (line.Length < 3) continue;
-            Match? best = null;
+            double bestScore = 0;
+            foreach (var e in ex) bestScore = Math.Max(bestScore, Score(line, e.Key));
+            if (bestScore < minScore) continue;
+            // 1.2.7: every extract with the best score counts (the feed can list the same exit twice, e.g. a PMC and a
+            // Scav "Railway Exfil" on Interchange; whichever copy the map draws must be marked as listed).
             foreach (var e in ex)
-            {
-                double s = Score(line, e.Key);
-                if (s >= minScore && (best == null || s > best.Score)) best = new Match(e.Id, e.Name, raw, s);
-            }
-            if (best != null && !res.Any(r => r.ExtractId == best.ExtractId)) res.Add(best);
+                if (Score(line, e.Key) >= bestScore - 1e-9 && !res.Any(r => r.ExtractId == e.Id))
+                    res.Add(new Match(e.Id, e.Name, raw, bestScore));
         }
         return res;
     }
 
-    /// <summary>Removes "EXFIL01", times ("12:34", "00:07:30"), and status words around the name.</summary>
+    // Row labels: "EXFIL01", "TRANSIT02" and OCR variants (EXF1L, EXFlL, EXFIL@1, EXFILO3, TRANSITQ1…), also when
+    // glued to the name ("EXFIL01Scav"). 1.2.7: only the label is removed. The word "Exfil" in a name
+    // ("Railway Exfil", "Saferoom Exfil") is kept; 1.2.6 dropped every word starting with "exfil".
+    private static readonly System.Text.RegularExpressions.Regex RowLabel = new(
+        @"^(?:EXF[I1lL|!]L|TRANS[I1lL|!]T)[0-9OoQDIl|!@]{1,3}(?=$|[^0-9OoQDIl|!@])",
+        System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    /// <summary>Removes "EXFIL01" / "TRANSIT01", times ("12:34", "00:07:30", "??:??:??"), and status words around the name.</summary>
     internal static string StripDecorations(string s)
     {
         var parts = s.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-        parts.RemoveAll(p => p.StartsWith("EXFIL", StringComparison.OrdinalIgnoreCase) || p.StartsWith("EXF1L", StringComparison.OrdinalIgnoreCase)
-                             || p.Count(char.IsDigit) >= 2 && p.Contains(':'));
+        for (int i = 0; i < parts.Count; i++)
+        {
+            var m = RowLabel.Match(parts[i]);
+            if (!m.Success) continue;
+            var rest = parts[i][m.Length..];
+            if (rest.Length == 0) parts.RemoveAt(i--); else parts[i] = rest;
+        }
+        parts.RemoveAll(p => p.Contains(':') && (p.Count(char.IsDigit) >= 2 || p.Count(c => c == '?') >= 2));
         string[] status = { "pending...", "pending", "open", "closed", "requirement", "requirement...", "not", "available", "unavailable", "check", "requirements" };
         while (parts.Count > 0 && status.Contains(parts[^1].ToLowerInvariant())) parts.RemoveAt(parts.Count - 1);
         return string.Join(' ', parts);
@@ -63,6 +77,9 @@ public static class ExitListMatcher
         var shortName = Normalize(System.Text.RegularExpressions.Regex.Replace(name, @"\b(co op|flare)\b", "")).Trim();
         if (shortName.Length > 0 && shortName != name) s = Math.Max(s, Similarity(line, shortName));
         if (line.Contains(name, StringComparison.Ordinal) && name.Length >= 6) s = Math.Max(s, 0.95);
+        // 1.2.7: a row cut off at the right edge ("Power Station V-", "Scav Camp (Co-0") still names the exit
+        if (line.Length >= 8 && line.Length >= name.Length * 0.6 && line.Length < name.Length)
+            s = Math.Max(s, 0.9 * Similarity(line, name[..line.Length]));
         return s;
     }
 

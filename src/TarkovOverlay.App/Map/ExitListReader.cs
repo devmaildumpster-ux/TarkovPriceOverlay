@@ -78,8 +78,11 @@ internal sealed class ExitListReader : IDisposable
                 await Task.Delay(delay);
                 var img = Desktop.Capture(region);
                 var read = await engine.RecognizeAsync(img, 1.0, CancellationToken.None);
-                foreach (var m in ExitListMatcher.MatchLines(read.Lines, exits)) found.TryAdd(m.ExtractId, m);
-                if (found.Count > 0) break;
+                var ms = ExitListMatcher.MatchLines(read.Lines, exits);
+                foreach (var m in ms) found.TryAdd(m.ExtractId, m);
+                // 1.2.7: both reads always run and their matches add up (the list fades in, and one read can miss a
+                // row); 1.2.6 stopped after the first read that matched anything.
+                Log.Write($"map: exit list OCR ({read.Engine}, +{delay} ms): {string.Join(" | ", read.Lines)} → {ms.Count} matched");
             }
             Log.Write($"map: exit list read: {(found.Count == 0 ? "nothing matched" : string.Join(", ", found.Values.Select(m => $"{m.ExtractName} ({m.Score:0.00})")))}");
             if (found.Count > 0) _f.SetListedExtracts(found.Keys.ToHashSet());

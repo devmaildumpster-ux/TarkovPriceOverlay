@@ -104,7 +104,7 @@ public static class ControlsHelp
             {
                 new ControlRow(shotKey, "Tarkov's own Screenshot key (Tarkov Settings › Controls). Each screenshot puts your dot and facing on the map, and switches the floor. Bind it if nothing happens."),
                 new ControlRow("More ▾ › Test position from latest screenshot", "Re-reads the newest screenshot and says what happened (folder, file, position)."),
-                new ControlRow("O", $"Experimental exit-list reader ({exitOcr}; Settings… › Map & Screenshots): after you press O in raid it reads the exit list and dims exits that aren't on it."),
+                new ControlRow("O", $"Experimental exit-list reader ({exitOcr}; Settings… › Map & Screenshots): after you press O in raid it reads the exit list and fades and crosses out (⊗) the map's exits that aren't on it."),
             }),
             new ControlSection("Buttons, menus & windows", new[]
             {

@@ -70,9 +70,11 @@ public class UpdateCheckTests : IDisposable
     }
 
     [Fact]
-    public void CurrentVersion_IsTheAssemblyVersion_126()
+    public void CurrentVersion_IsTheAssemblyVersion()
     {
-        Assert.Equal(V126, UpdateChecker.CurrentVersion);
+        var asm = typeof(UpdateChecker).Assembly.GetName().Version!;
+        Assert.Equal(new AppVersion(asm.Major, asm.Minor, asm.Build), UpdateChecker.CurrentVersion);
+        Assert.True(UpdateChecker.CurrentVersion >= V126);
         Assert.Equal(V126, AppVersion.From(new Version(1, 2, 6, 0)));
     }
 

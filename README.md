@@ -99,7 +99,7 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
 |---|---|
 | PrtScn | Tarkov's own Screenshot key (Tarkov Settings › Controls). Each screenshot puts your dot and facing on the map, and switches the floor. Bind it if nothing happens. |
 | More ▾ › Test position from latest screenshot | Re-reads the newest screenshot and says what happened (folder, file, position). |
-| O | Experimental exit-list reader (off by default; Settings… › Map & Screenshots): after you press O in raid it reads the exit list and dims exits that aren't on it. |
+| O | Experimental exit-list reader (off by default; Settings… › Map & Screenshots): after you press O in raid it reads the exit list and fades and crosses out (⊗) the map's exits that aren't on it. |
 
 **Buttons, menus & windows**
 
@@ -126,6 +126,13 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
 | Right-click | Menu: Open, Settings…, Controls & hotkeys, Quit. |
 
 <!-- controls:end -->
+
+## New in 1.2.7
+
+- **Exit list fix (O key).** Exits with "Exfil" in their name (Railway Exfil, Saferoom Exfil, …) were crossed out on
+  the map even when they were on your in-game list, and a row missed in the first screen read was never re-read.
+  Now only the "EXFIL01" row label is ignored, both reads always count, and exits tarkov.dev lists twice (PMC + Scav
+  copies) are matched either way. Exits that aren't on your list stay faded with ⊗, now without their zone box.
 
 ## New in 1.2.6
 

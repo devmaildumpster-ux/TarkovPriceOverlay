@@ -119,6 +119,20 @@ internal static class MapUiPreview
                 enc.Frames.Add(BitmapFrame.Create(rtb));
                 using (var fs = File.Create(outFile)) enc.Save(fs);
                 Console.WriteLine($"saved {outFile} ({rtb.PixelWidth}×{rtb.PixelHeight})");
+                // 1.2.7: exit list as read by OCR ("--exit-list 'EXFIL01 Scav Camp (Co-Op)|EXFIL02 …'"): same matching as the O reader
+                int el = Array.IndexOf(args, "--exit-list");
+                if (el >= 0 && el + 1 < args.Length)
+                {
+                    var lines = args[el + 1].Split('|');
+                    var exits = map.Panel.CurrentExtracts.Where(e => e.Kind != Maps.Extracts.ExtractKind.Transit).Select(e => (e.Id, e.Name)).ToList();
+                    var ms = Maps.Extracts.ExitListMatcher.MatchLines(lines, exits);
+                    map.SetListedExtracts(ms.Select(m => m.ExtractId).ToHashSet());
+                    foreach (var e in map.Panel.CurrentExtracts)
+                        Console.WriteLine($"exit list: {(e.Kind == Maps.Extracts.ExtractKind.Transit ? "transit " : ms.Any(m => m.ExtractId == e.Id) ? "LISTED  " : "crossed ")} {e.Name} ({e.KindLabel})");
+                    await Task.Delay(600);
+                    main.UpdateLayout();
+                    Save(root, Path.ChangeExtension(outFile, null) + "-exitlist.png", null);
+                }
                 // 1.2.1: Satellite/Vector toggle (button state, shortcut path, single-style map)
                 if (args.Contains("--style-toggle"))
                 {

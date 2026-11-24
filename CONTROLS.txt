@@ -1,4 +1,4 @@
-﻿Tarkov Price Overlay 1.2.6 — Controls & hotkeys (default keys)
+﻿Tarkov Price Overlay 1.2.7 — Controls & hotkeys (default keys)
 In the app: the "? Controls" button at the top shows this list with YOUR current keys.
 Shortcuts can be changed or cleared in Settings… (Overlay & Card: price shortcut on/off; Overlay & Card / Map & Screenshots: Record… / Clear / Default).
 Run Tarkov in Borderless or Windowed mode (cards can't draw over exclusive Fullscreen).
@@ -50,8 +50,8 @@ SCREENSHOTS & POSITION (IN RAID)
                                 Re-reads the newest screenshot and says what happened (folder, file,
                                 position).
   O                             Experimental exit-list reader (off by default; Settings… › Map & Screenshots):
-                                after you press O in raid it reads the exit list and dims exits that aren't on
-                                it.
+                                after you press O in raid it reads the exit list and fades and crosses out (⊗)
+                                the map's exits that aren't on it.
 
 BUTTONS, MENUS & WINDOWS
   ? Controls                    This list (also More ▾, the tray menu and Settings…). Shows your current keys.
