@@ -1,35 +1,41 @@
-Tarkov Price Overlay 1.2.7 (applies over 1.0.0 – 1.2.6, self-contained build)
+Tarkov Price Overlay 1.2.8 (applies over 1.0.0 – 1.2.7, self-contained build)
 
-INSTALL (update)
+INSTALL (update) - this one time by hand
+Versions up to 1.2.7 only have the old Download button, so 1.2.8 has to be copied in by hand once.
+From 1.2.8 on, the Update now button installs new versions for you.
 1. Close Tarkov Price Overlay (if "Minimize to tray" is on: right-click the tray icon › Quit).
-2. Copy every file and folder in TarkovPriceOverlay-update-1.2.7.zip (including "licenses") into
+2. Copy every file and folder in TarkovPriceOverlay-update-1.2.8.zip (including "licenses" and the new
+   TarkovPriceOverlay.Updater.exe) into
    <your install folder>\TarkovPriceOverlay\self-contained
    and choose "Replace the files in the destination". Copy everything, not just the exe.
-3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.2.7.0).
+3. Start TarkovPriceOverlay.exe (overlay.log / smoke test says 1.2.8.0).
    Settings, tracked items, quest progress and map settings are kept.
 New users: download TarkovPriceOverlay-win-x64.zip and run TarkovPriceOverlay\self-contained\TarkovPriceOverlay.exe.
+Framework-dependent users: download the full zip and replace your framework-dependent folder.
 
-FIX: EXIT LIST (O KEY) CROSSED OUT EXITS THAT WERE ON YOUR LIST
-Report (Interchange, PvE, PMC). Your list: Scav Camp (Co-Op), Saferoom Exfil, Railway Exfil, Power Station V-Ex,
-Path to River (Flare), plus the two transits. The map crossed out Railway Exfil, Saferoom Exfil and Scav Camp (Co-Op)
-as "not on your list"; only Power Station V-Ex and Path to River were marked as listed.
-- Cause 1: to drop the row label ("EXFIL03") the reader removed every word starting with "exfil", so
-  "Railway Exfil" became "Railway" and "Saferoom Exfil" became "Saferoom", which were too different to match.
-  Now only the row label is removed (EXFIL01…, TRANSIT01…, and OCR misreads like EXF1L03, EXFIL@3, EXFILO3, also when
-  glued to the name like "EXFIL01Scav"). Any exit with "Exfil" in its name was affected (Interchange, Woods, …).
-- Cause 2: the reader stopped after the first of its two screen reads that matched anything. The list fades in,
-  so a row missed in the first read (likely what happened to Scav Camp (Co-Op)) never got a second chance.
-  Both reads now always run and their matches add up.
-- Cause 3 (same root, made sturdier): tarkov.dev lists some exits twice (a PMC and a Scav "Railway Exfil",
-  "Emercom Checkpoint"); the map draws one "PMC + Scav" marker. A matched name now marks every copy, so the marker
-  is listed whichever copy it uses.
-- Rows cut off at the edge ("Power Station V-", "Scav Camp (Co-0") still match. Timers like ??:??:?? are ignored.
-- Hole in the Fence and Emercom Checkpoint were NOT on your list, so they are still crossed out (⊗, faded). That's
-  intended: the map keeps every exit of the map and fades the ones not on this raid's list. Their zone boxes are
-  no longer drawn, so they stand out less.
-- The pink rectangle with a diamond near Path to River is a quest objective zone, not an exit.
-- overlay.log now records what the exit-list reader read ("map: exit list OCR (…): EXFIL01 … → 5 matched") so a
-  wrong match can be checked.
+NEW: UPDATE NOW (THE APP UPDATES ITSELF)
+- The "Update available" strip has Update now, Release page (the old Download: opens the release in your
+  browser), Skip this version and ×. Settings… › Troubleshooting › Updates has Update now and Cancel too.
+- Update now:
+  1. asks GitHub for this repo's latest release and picks the file: the small update zip for self-contained
+     installs, the full TarkovPriceOverlay-win-x64.zip for framework-dependent ones (or if there's no update zip);
+  2. downloads it with a progress bar; Cancel stops it and nothing changes. Downloads are only accepted over HTTPS
+     from github.com (this repo's release files) and GitHub's download servers;
+  3. checks the size and SHA-256 against GitHub's checksum for the file, and against SHA256SUMS.txt when the
+     release has one. A file without any checksum, or one that doesn't match, is deleted and not installed;
+  4. unpacks it to %LOCALAPPDATA%\TarkovPriceOverlay\update\staging, refusing zips with unexpected layout or
+     file names that would escape the folder, and checks the files inside are the release's version;
+  5. closes the overlay and starts TarkovPriceOverlay.Updater.exe (copied to the update folder so nothing in your
+     install is locked). It waits for the overlay to exit, backs up every file it replaces to
+     %LOCALAPPDATA%\TarkovPriceOverlay\update\backup, copies the new files in, and if anything fails puts all of
+     them back, then restarts the overlay;
+  6. after the restart the strip says "Updated to X.Y.Z" (or why it didn't install; you keep the old version).
+- Never touches settings, caches, logs or quest progress (they live in %LOCALAPPDATA%, not the install folder).
+- Never asks for admin rights. If the install folder needs them (for example under Program Files) you get a
+  clear message: move the TarkovPriceOverlay folder somewhere you own, or update by hand.
+- Every step is written to overlay.log (lines starting "update:" and "updater:").
+- TarkovPriceOverlay.exe --self-update does the same from a terminal.
+- Releases now also attach SHA256SUMS.txt.
 
 ALSO
-- Includes everything from 1.0.1-1.2.6 (update check on launch, outage handling, controls window, …).
+- Includes everything from 1.0.1-1.2.7 (exit list fix, update check on launch, outage handling, …).

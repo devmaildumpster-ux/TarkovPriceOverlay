@@ -48,4 +48,15 @@
   <Target Name="RemoveX86NativesAfterPublish" AfterTargets="Publish">
     <RemoveDir Directories="$(PublishDir)x86" />
   </Target>
+  <!-- 1.2.8: publish TarkovPriceOverlay.Updater.exe (one self-contained file) next to TarkovPriceOverlay.exe. -->
+  <Target Name="PublishUpdaterNextToApp" AfterTargets="Publish" Condition="'$(SkipUpdaterPublish)' != 'true'">
+    <PropertyGroup>
+      <_UpdaterOut>$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)updater-publish/</_UpdaterOut>
+      <_DotnetExe Condition="'$(DOTNET_HOST_PATH)' != ''">$(DOTNET_HOST_PATH)</_DotnetExe>
+      <_DotnetExe Condition="'$(_DotnetExe)' == ''">dotnet</_DotnetExe>
+    </PropertyGroup>
+    <RemoveDir Directories="$(_UpdaterOut)" />
+    <Exec Command="&quot;$(_DotnetExe)&quot; publish &quot;$(MSBuildProjectDirectory)/../TarkovOverlay.Updater/TarkovOverlay.Updater.csproj&quot; -c $(Configuration) -r win-x64 -o &quot;$(_UpdaterOut)&quot; -nologo -v:q" />
+    <Copy SourceFiles="$(_UpdaterOut)TarkovPriceOverlay.Updater.exe" DestinationFolder="$(PublishDir)" />
+  </Target>
 </Project>

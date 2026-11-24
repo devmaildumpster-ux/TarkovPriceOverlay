@@ -14,6 +14,8 @@ public sealed class AppPaths
     public string DiagnosticsDir => Path.Combine(Root, "diagnostics");
     /// <summary>1.2.6: last GitHub release check (6 h cache).</summary>
     public string UpdateCheckFile => Path.Combine(Root, "update-check.json");
+    /// <summary>1.2.8: Update now's download, staging, backup, plan and result (update\).</summary>
+    public string UpdateDir => Path.Combine(Root, "update");
 
     private static string Sanitize(string s) => string.Concat(s.Where(c => char.IsLetterOrDigit(c) || c == '-' || c == '_'));
 

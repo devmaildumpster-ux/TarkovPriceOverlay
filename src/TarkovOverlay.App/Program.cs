@@ -23,6 +23,7 @@ public static class Program
     {
         if (args.Contains("--smoke-test")) return Cli(() => SmokeTest());
         if (args.Contains("--update-check")) return Cli(() => UpdateCheckCli());
+        if (args.Contains("--self-update")) return Cli(() => SelfUpdateCli(args));
         int di = Array.IndexOf(args, "--diagnose");
         if (di >= 0) return Cli(() => Diagnose(args, di));
         if (args.Contains("--map-ui-preview")) return Cli(() => Map.MapUiPreview.Run(args));
@@ -181,6 +182,40 @@ public static class Program
     /// availability, and the VC++ runtime. Works from any working directory. Exit 0 = all good, 1 = bundled
     /// component broken, 2 = only Windows OCR unavailable (Tesseract fallback still works).
     /// </summary>
+    /// <summary>
+    /// 1.2.8: --self-update [--then &lt;args for the relaunch…&gt;] runs the same steps as Update now without the window
+    /// (download, verify, unpack, start the updater) and exits so the updater can install and relaunch.
+    /// </summary>
+    private static int SelfUpdateCli(string[] args)
+    {
+        int then = Array.IndexOf(args, "--then");
+        var relaunch = then >= 0 ? args[(then + 1)..] : Array.Empty<string>();
+        var checker = new TarkovOverlay.Core.Updates.UpdateChecker(cacheFile: null) { Log = Log.Write };
+        var up = new TarkovOverlay.Core.Updates.SelfUpdater(checker, new TarkovOverlay.Core.AppPaths().UpdateDir, AppContext.BaseDirectory)
+        { Log = m => { Log.Write(m); Console.WriteLine(m); } };
+        var cur = TarkovOverlay.Core.Updates.UpdateChecker.CurrentVersion;
+        Console.WriteLine($"Tarkov Price Overlay self-update · this version {cur} · API {checker.Api}");
+        try
+        {
+            string last = "";
+            var progress = new Progress<TarkovOverlay.Core.Updates.UpdateProgress>(p =>
+            {
+                var line = p.Total > 0 ? $"{p.Stage} {p.Fraction:P0}" : p.Stage;
+                if (line != last) { last = line; Console.WriteLine("  " + line); }
+            });
+            var prepared = up.PrepareAsync(cur, Environment.ProcessId, Log.FilePath, progress, default, relaunch).GetAwaiter().GetResult();
+            up.Launch(prepared);
+            Console.WriteLine($"RESULT: updater started for {prepared.Version}; this process exits now");
+            return 0;
+        }
+        catch (TarkovOverlay.Core.Updates.UpdateException ex)
+        {
+            Log.Write("update: failed: " + ex.Message);
+            Console.WriteLine("RESULT: FAILED: " + ex.Message);
+            return ex.NeedsAdmin ? 3 : 2;
+        }
+    }
+
     /// <summary>1.2.6: --update-check prints what the launch check would say (no cache, nothing written).</summary>
     private static int UpdateCheckCli()
     {

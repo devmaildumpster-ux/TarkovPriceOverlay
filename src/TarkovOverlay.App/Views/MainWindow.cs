@@ -145,6 +145,10 @@ public sealed class MainWindow : Window
         // 1.2.6: release check after the window is up (background, 5 s timeout, silent on failure, never activates a window)
         _s.UpdateResultChanged += r => Dispatcher.BeginInvoke(() => ShowUpdate(r));
         Loaded += (_, _) => { if (_s.Settings.CheckForUpdates) _ = _s.CheckForUpdatesAsync(); };
+        // 1.2.8: Update now
+        _s.SelfUpdateChanged += st => Dispatcher.BeginInvoke(() => ShowSelfUpdate(st));
+        _s.ExitForUpdate = () => Dispatcher.BeginInvoke(() => { Log.Write("update: closing for the updater"); Close(); });
+        if (_s.LastUpdateOutcome is { } outcome) ShowUpdatedNote(outcome);
 
         UpdateHeader();
         RefreshTracked();
@@ -152,10 +156,77 @@ public sealed class MainWindow : Window
 
     private void ShowUpdate(Core.Updates.UpdateCheckResult r)
     {
-        if (!r.ShowBanner || _updateDismissed || r.Latest is not { } latest) { _updateBar.Visibility = Visibility.Collapsed; return; }
-        _updateText.Text = $"Update available: {latest} (you have {r.Current})";
-        _updateBar.ToolTip = $"A newer version is on GitHub. Download opens the release page in your browser; nothing is downloaded or installed by itself.\n{r.Url}";
+        if (_s.SelfUpdateState.Busy) return;
+        if (!r.ShowBanner || _updateDismissed || r.Latest is not { } latest) { if (_updateNote == null) _updateBar.Visibility = Visibility.Collapsed; return; }
+        _updateNote = null;
+        SetUpdateBar($"Update available: {latest} (you have {r.Current})",
+            $"A newer version is on GitHub.\nUpdate now downloads it from GitHub, checks it, installs it and restarts the overlay (your settings are kept).\nRelease page opens it in your browser instead.\n{r.Url}",
+            false,
+            Ui.Button("Update now", (_, _) => _ = _s.UpdateNowAsync(), $"Download {latest} from GitHub, install it and restart the overlay"),
+            Ui.Button("Release page", (_, _) => LinkLauncher.OpenRelease(r.Url), "Open the release page in your browser (manual download)"),
+            Ui.Button("Skip this version", (_, _) => _s.SkipUpdate(latest), "Don't show this version again (a later one will show)"),
+            CloseButton());
         _updateBar.Tag = r;
+    }
+
+    /// <summary>1.2.8: progress / errors of Update now in the same strip.</summary>
+    private void ShowSelfUpdate(SelfUpdateStatus st)
+    {
+        switch (st.Phase)
+        {
+            case SelfUpdatePhase.Working:
+                SetUpdateBar(st.Text, "Downloading from GitHub. Nothing changes until the download is checked; Cancel stops it.", false,
+                    Ui.Button("Cancel", (_, _) => _s.CancelUpdate(), "Stop the download; nothing is installed"));
+                _updateProgress.Visibility = Visibility.Visible;
+                _updateProgress.IsIndeterminate = st.Fraction == null;
+                if (st.Fraction is { } f) _updateProgress.Value = f * 100;
+                break;
+            case SelfUpdatePhase.Restarting:
+                SetUpdateBar(st.Text, null, false);
+                break;
+            case SelfUpdatePhase.Failed:
+                SetUpdateBar("Update failed: " + st.Text, "Nothing was changed. Details are in overlay.log.", true,
+                    Ui.Button("Try again", (_, _) => _ = _s.UpdateNowAsync(), "Run Update now again"),
+                    Ui.Button("Release page", (_, _) => LinkLauncher.OpenRelease((_updateBar.Tag as Core.Updates.UpdateCheckResult)?.Url ?? Core.Updates.UpdateChecker.ReleasesPage), "Download it by hand instead"),
+                    CloseButton());
+                break;
+            case SelfUpdatePhase.Cancelled:
+                if (_updateBar.Tag is Core.Updates.UpdateCheckResult r) ShowUpdate(r); else _updateBar.Visibility = Visibility.Collapsed;
+                _updateText.Text += " · update cancelled";
+                break;
+        }
+    }
+
+    /// <summary>1.2.8: after the updater relaunched the app: "Updated to X.Y.Z" (or why it didn't install).</summary>
+    private void ShowUpdatedNote(Core.Updates.UpdateOutcome o)
+    {
+        _updateNote = o;
+        var cur = Core.Updates.UpdateChecker.CurrentVersion;
+        if (o.Ok)
+            SetUpdateBar($"Updated to {cur} ✓ (from {o.FromVersion})", "Update now installed it; your settings were kept.", false,
+                Ui.Button("What's new", (_, _) => LinkLauncher.OpenRelease($"{Core.Updates.UpdateChecker.ReleasesPage}/tag/v{cur}"), "Open this version's release notes"),
+                CloseButton());
+        else
+            SetUpdateBar($"The update to {o.ToVersion} didn't install{(o.RolledBack ? " (rolled back)" : "")}: {o.Error} You still have {cur}.", "Details are in overlay.log (lines starting updater:).", true,
+                Ui.Button("Release page", (_, _) => LinkLauncher.OpenRelease(Core.Updates.UpdateChecker.ReleasesPage), "Download it by hand instead"),
+                CloseButton());
+    }
+
+    private Core.Updates.UpdateOutcome? _updateNote;
+    private readonly ProgressBar _updateProgress = new() { Height = 4, Minimum = 0, Maximum = 100, Margin = new Thickness(0, 3, 0, 0), Visibility = Visibility.Collapsed, Foreground = Theme.Green, Background = Theme.Window, BorderThickness = new Thickness(0) };
+    private readonly StackPanel _updateButtons = new() { Orientation = Orientation.Horizontal };
+
+    private Button CloseButton() => Ui.Button("×", (_, _) => { _updateDismissed = true; _updateNote = null; _updateBar.Visibility = Visibility.Collapsed; }, "Hide until next launch");
+
+    private void SetUpdateBar(string text, string? tip, bool warn, params Button[] buttons)
+    {
+        _updateText.Text = text;
+        _updateBar.ToolTip = tip;
+        _updateBar.Background = warn ? new SolidColorBrush(Color.FromArgb(0x33, 0xE0, 0x9A, 0x30)) : new SolidColorBrush(Color.FromArgb(0x33, 0x4C, 0xAF, 0x50));
+        _updateBar.BorderBrush = warn ? Theme.Warn : Theme.Green;
+        _updateButtons.Children.Clear();
+        foreach (var b in buttons) _updateButtons.Children.Add(b);
+        _updateProgress.Visibility = Visibility.Collapsed;
         _updateBar.Visibility = Visibility.Visible;
     }
 
@@ -164,15 +235,15 @@ public sealed class MainWindow : Window
         _updateBar.Background = new SolidColorBrush(Color.FromArgb(0x33, 0x4C, 0xAF, 0x50));
         _updateBar.BorderBrush = Theme.Green;
         var row = new DockPanel { LastChildFill = true };
-        var buttons = Ui.Row(
-            Ui.Button("Download", (_, _) => { if (_updateBar.Tag is Core.Updates.UpdateCheckResult r) LinkLauncher.OpenRelease(r.Url); }, "Open the release page in your browser"),
-            Ui.Button("Skip this version", (_, _) => { if (_updateBar.Tag is Core.Updates.UpdateCheckResult { Latest: { } v }) _s.SkipUpdate(v); }, "Don't show this version again (a later one will show)"),
-            Ui.Button("×", (_, _) => { _updateDismissed = true; _updateBar.Visibility = Visibility.Collapsed; }, "Hide until next launch"));
-        DockPanel.SetDock(buttons, Dock.Right);
-        row.Children.Add(buttons);
+        DockPanel.SetDock(_updateButtons, Dock.Right);
+        row.Children.Add(_updateButtons);
         _updateText.VerticalAlignment = VerticalAlignment.Center;
+        _updateText.TextWrapping = TextWrapping.Wrap;
         row.Children.Add(_updateText);
-        _updateBar.Child = row;
+        var col = new StackPanel();
+        col.Children.Add(row);
+        col.Children.Add(_updateProgress);
+        _updateBar.Child = col;
         return _updateBar;
     }
 

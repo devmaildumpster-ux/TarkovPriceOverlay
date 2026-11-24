@@ -30,9 +30,11 @@ app, and copy everything in it (including the `licenses` folder) into your `Tark
 replacing the files. Settings, tracked items and quest progress are kept. (The update zip is for the
 `self-contained` folder; if you use `framework-dependent`, download the full zip instead.)
 
-**Updates:** since 1.2.6 the app checks GitHub for a newer release when it starts and shows a small
-"Update available" strip with a **Download** button (opens the release page; nothing installs by itself). Turn it off
-in **Settings… › Troubleshooting › Updates**.
+**Updates:** the app checks GitHub for a newer release when it starts and shows a small "Update available" strip.
+Since 1.2.8, **Update now** installs it for you: it downloads the release file from GitHub, checks its SHA-256,
+replaces the program files and restarts the overlay (settings, tracked items and quest progress are kept). **Release
+page** opens the release in your browser instead. The check and Update now are also in **Settings… › Troubleshooting ›
+Updates**. Versions up to 1.2.7 only have the Download button, so install 1.2.8 by hand once.
 
 ## Quick start for a new user
 
@@ -116,7 +118,7 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
 | Pop out card / Load price history / Wiki / tarkov.dev | Buttons under the item card in the main window. |
 | Popped-out card | Drag to move; double-click or Esc closes it. |
 | − / + / × | Tracked items: one handed in, one more, stop tracking. |
-| Update available: Download / Skip this version / × | Shows under the top bar when a newer version is on GitHub. Download opens the release page in your browser (nothing installs by itself); Skip hides that version; × hides it until next launch. Turn the check off in Settings… › Troubleshooting › Updates. |
+| Update available: Update now / Release page / Skip this version / × | Shows under the top bar when a newer version is on GitHub. Update now downloads it from GitHub, checks it, installs it and restarts the overlay (settings kept; Cancel stops the download); Release page opens it in your browser instead; Skip hides that version; × hides it until next launch. Also in Settings… › Troubleshooting › Updates. |
 
 **Tray icon (when Minimize to tray is on)**
 
@@ -126,6 +128,19 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
 | Right-click | Menu: Open, Settings…, Controls & hotkeys, Quit. |
 
 <!-- controls:end -->
+
+## New in 1.2.8
+
+- **Update now: the app updates itself.** The update strip (and Settings… › Troubleshooting › Updates) has an
+  **Update now** button. It downloads the update from this repo's latest GitHub release with a progress bar and a
+  **Cancel** button, and refuses anything that isn't from GitHub over HTTPS. It checks the file's SHA-256 against
+  GitHub's checksum (and `SHA256SUMS.txt` when the release has one), unpacks it to
+  `%LOCALAPPDATA%\TarkovPriceOverlay\update`, checks the files inside are the expected version, then closes the overlay.
+  A small helper (`TarkovPriceOverlay.Updater.exe`) backs up the files it replaces, copies the new ones in, puts
+  everything back if anything fails, and restarts the overlay, which then shows "Updated to X.Y.Z". Settings, caches
+  and logs are never touched. Self-contained installs get the small update zip, framework-dependent ones the full zip.
+  If the folder needs admin rights (for example under Program Files) you get a clear message instead of a UAC prompt;
+  move the folder somewhere you own. Every step is in `overlay.log` (lines starting `update:` and `updater:`).
 
 ## New in 1.2.7
 
@@ -234,6 +249,7 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
    - Exit code 2 means Windows OCR is missing, so only the Tesseract fallback is available.
    - Exit code 1 means a bundled component is broken.
 5. Optional: `TarkovPriceOverlay.exe --update-check` prints what the update check sees (this version, the latest release).
+   `TarkovPriceOverlay.exe --self-update` does the same as Update now from a terminal (download, verify, install, restart).
 
 ## Use
 
@@ -368,6 +384,10 @@ divider to the right of it to make it wider). Nothing is drawn over the game.
   - "Export last capture…" saves the title crop and a text report, but only when you click it. Nothing is saved automatically.
   - `TarkovPriceOverlay.exe --diagnose shot.png --cursor 1200,640 [--mode pve] [--scale 1.25]` runs the same pipeline on a full-monitor screenshot and writes `shot.png.diag.txt`.
 - Errors are logged to `%LOCALAPPDATA%\TarkovPriceOverlay\error.log`.
+- **Update now failed**: the strip says why, and nothing was changed (a failed install is rolled back). Common causes:
+  GitHub rate limits (try later), the install folder needs admin rights (move it out of Program Files), or antivirus
+  holding a file. The replaced files of the last update are kept in `%LOCALAPPDATA%\TarkovPriceOverlay\update\backup`.
+  You can always download the zip from the release page by hand.
 
 ## Building from source
 
@@ -386,10 +406,17 @@ You only need this to change the code; to just use the app, download the release
   dotnet publish src/TarkovOverlay.App -c Release -r win-x64 --self-contained true  -o publish/self-contained
   dotnet publish src/TarkovOverlay.App -c Release -r win-x64 --self-contained false -o publish/framework-dependent
   ```
-  Output lands in `publish/self-contained/` and `publish/framework-dependent/` (each has `TarkovPriceOverlay.exe`,
+  Publishing also builds `TarkovPriceOverlay.Updater.exe` (one self-contained file used by Update now) next to the
+  app. Output lands in `publish/self-contained/` and `publish/framework-dependent/` (each has `TarkovPriceOverlay.exe`,
   `tessdata\`, `licenses\`, `README.md`, `CONTROLS.txt`, `THIRD-PARTY-NOTICES.md`, `LICENSE.txt`). The release zip is
   those two folders inside a `TarkovPriceOverlay\` folder, plus `README.md`, `CONTROLS.txt`,
   `THIRD-PARTY-NOTICES.md` and `LICENSE.txt`. Builds are deterministic and don't embed your local folder paths.
+- Releases attach `TarkovPriceOverlay-win-x64.zip`, `TarkovPriceOverlay-update-<version>.zip` and `SHA256SUMS.txt`
+  (`sha256sum` of both zips); Update now uses those names.
+- **Testing Update now locally:** `python3 tools/fake_github_release.py <folder with release files> v9.9.9` serves a
+  fake latest release on 127.0.0.1:8765; start the app with `TPO_UPDATE_URL=http://127.0.0.1:8765/api/latest`.
+  That variable is for testing only (never set by default); while it is set, downloads from that local address are
+  allowed too, and overlay.log says "TEST MODE".
 - `publish/`, `bin/` and `obj/` are ignored by git.
 
 ## License

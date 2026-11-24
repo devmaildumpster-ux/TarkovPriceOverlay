@@ -66,6 +66,66 @@ public sealed class AppServices : IDisposable
         }
     }
 
+    // ---------------- 1.2.8: Update now (self-update) ----------------
+    public SelfUpdater SelfUpdate { get; }
+    /// <summary>What the updater reported after the last relaunch (read once at start; null if no update just ran).</summary>
+    public UpdateOutcome? LastUpdateOutcome { get; }
+    public SelfUpdateStatus SelfUpdateState { get; private set; } = SelfUpdateStatus.Idle;
+    public event Action<SelfUpdateStatus>? SelfUpdateChanged;
+    /// <summary>Set by the main window: closes the app so the updater can replace the files.</summary>
+    public Action? ExitForUpdate { get; set; }
+    private CancellationTokenSource? _updateCts;
+
+    private void SetUpdateState(SelfUpdateStatus st) { SelfUpdateState = st; SelfUpdateChanged?.Invoke(st); }
+
+    /// <summary>
+    /// Downloads, verifies and unpacks the latest release, starts the updater and closes the app (it relaunches).
+    /// Failures and Cancel leave the install untouched and are shown in the banner / Settings.
+    /// </summary>
+    public async Task UpdateNowAsync(string[]? relaunchArgs = null)
+    {
+        if (SelfUpdateState.Busy) return;
+        var cts = _updateCts = new CancellationTokenSource();
+        SetUpdateState(new(SelfUpdatePhase.Working, "Starting the update…", null));
+        var progress = new Progress<UpdateProgress>(p =>
+        {
+            if (cts.IsCancellationRequested) return;
+            var text = p.Total > 0 ? $"{p.Stage} {p.Fraction:P0} ({ReleaseInfo.FormatBytes(p.Bytes)} of {ReleaseInfo.FormatBytes(p.Total)})" : p.Stage;
+            SetUpdateState(new(SelfUpdatePhase.Working, text, p.Fraction));
+        });
+        try
+        {
+            var prepared = await SelfUpdate.PrepareAsync(UpdateChecker.CurrentVersion, Environment.ProcessId, Log.FilePath, progress, cts.Token, relaunchArgs);
+            cts.Token.ThrowIfCancellationRequested();
+            SetUpdateState(new(SelfUpdatePhase.Restarting, $"Installing {prepared.Version}: the overlay closes and reopens in a few seconds…", 1));
+            SaveNow();
+            SelfUpdate.Launch(prepared);
+            await Task.Delay(400);
+            ExitForUpdate?.Invoke();
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            Log.Write("update: cancelled by the user; nothing was installed");
+            SetUpdateState(new(SelfUpdatePhase.Cancelled, "Update cancelled. Nothing was changed.", null));
+        }
+        catch (UpdateException ex)
+        {
+            Log.Write($"update: failed{(ex.NeedsAdmin ? " (needs admin rights)" : "")}: {ex.Message}");
+            SetUpdateState(new(SelfUpdatePhase.Failed, ex.Message, null, ex.NeedsAdmin));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            Log.Write($"update: failed: {ex.GetType().Name}: {ex.Message}");
+            SetUpdateState(new(SelfUpdatePhase.Failed, $"The update couldn't be prepared ({ex.Message}). Nothing was changed; use Open releases page.", null, ex is UnauthorizedAccessException));
+        }
+        finally { if (ReferenceEquals(_updateCts, cts)) _updateCts = null; cts.Dispose(); }
+    }
+
+    public void CancelUpdate()
+    {
+        try { _updateCts?.Cancel(); } catch (ObjectDisposedException) { }
+    }
+
     /// <summary>The item of the last lookup / selection / search (for the Wiki and tarkov.dev shortcuts).</summary>
     public CatalogItem? LastItem { get; private set; }
     public event Action<CatalogItem>? LastItemChanged;
@@ -116,6 +176,11 @@ public sealed class AppServices : IDisposable
             Hideout);
         Updates = new UpdateChecker(Paths.UpdateCheckFile) { Log = Log.Write };
         if (Updates.Api != UpdateChecker.LatestApi) Log.Write($"update check: URL overridden by {UpdateChecker.UrlEnv} = {Updates.Api} (test only)");
+        SelfUpdate = new SelfUpdater(Updates, Paths.UpdateDir, AppContext.BaseDirectory) { Log = Log.Write };
+        LastUpdateOutcome = SelfUpdate.TakeOutcome();
+        if (LastUpdateOutcome is { } uo)
+            Log.Write(uo.Ok ? $"update: now running {UpdateChecker.CurrentVersion} (updated from {uo.FromVersion}; {uo.FilesReplaced} replaced, {uo.FilesAdded} added)"
+                            : $"update: the update to {uo.ToVersion} did not install{(uo.RolledBack ? " and was rolled back" : "")}: {uo.Error}");
         _saveDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
         _saveDebounce.Tick += (_, _) => { _saveDebounce.Stop(); SaveNow(); };
     }
@@ -136,4 +201,13 @@ public sealed class AppServices : IDisposable
         Tesseract.Dispose();
         Feed.Dispose();
     }
+}
+
+public enum SelfUpdatePhase { Idle, Working, Restarting, Failed, Cancelled }
+
+/// <summary>1.2.8: what Update now is doing, for the banner and Settings › Updates.</summary>
+public sealed record SelfUpdateStatus(SelfUpdatePhase Phase, string Text, double? Fraction, bool NeedsAdmin = false)
+{
+    public static readonly SelfUpdateStatus Idle = new(SelfUpdatePhase.Idle, "", null);
+    public bool Busy => Phase is SelfUpdatePhase.Working or SelfUpdatePhase.Restarting;
 }

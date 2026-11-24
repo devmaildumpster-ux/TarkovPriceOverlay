@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TarkovOverlay.Maps", "src\T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TarkovOverlay.Maps.Tests", "tests\TarkovOverlay.Maps.Tests\TarkovOverlay.Maps.Tests.csproj", "{E17B8416-65FA-4284-A6EB-70F8D8FAA9C7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TarkovOverlay.Updater", "src\TarkovOverlay.Updater\TarkovOverlay.Updater.csproj", "{9E8481FF-2838-495B-9C60-7AB975131D14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{E17B8416-65FA-4284-A6EB-70F8D8FAA9C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E17B8416-65FA-4284-A6EB-70F8D8FAA9C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E17B8416-65FA-4284-A6EB-70F8D8FAA9C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E8481FF-2838-495B-9C60-7AB975131D14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E8481FF-2838-495B-9C60-7AB975131D14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E8481FF-2838-495B-9C60-7AB975131D14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E8481FF-2838-495B-9C60-7AB975131D14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{71E9C1B2-0D91-4C80-AD37-9744CF5DEC64} = {9C3E436C-22CD-44CA-9BD1-A39FD5952715}
@@ -60,5 +66,6 @@ Global
 		{FB49D864-F99D-4B48-9966-CCF02298B9E9} = {9C3E436C-22CD-44CA-9BD1-A39FD5952715}
 		{7E28B283-536F-4221-8A61-232D750F4957} = {9C3E436C-22CD-44CA-9BD1-A39FD5952715}
 		{E17B8416-65FA-4284-A6EB-70F8D8FAA9C7} = {1337E792-7DAF-4B0C-BE31-FB99F7FEB33B}
+		{9E8481FF-2838-495B-9C60-7AB975131D14} = {9C3E436C-22CD-44CA-9BD1-A39FD5952715}
 	EndGlobalSection
 EndGlobal

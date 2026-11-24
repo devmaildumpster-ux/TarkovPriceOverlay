@@ -80,7 +80,7 @@ public sealed class UpdateCheckCache
 
 /// <summary>
 /// 1.2.6: "is there a newer release?" against GitHub Releases. One unauthenticated GET of releases/latest with a 5 s
-/// timeout, at most once per launch and at most every 6 h (cached). Never downloads or installs anything; any failure
+/// timeout, at most once per launch and at most every 6 h (cached). The check itself never downloads or installs anything (1.2.8: Update now does, see SelfUpdater); any failure
 /// (offline, timeout, 403/429 rate limit, bad JSON) is silent and only logged.
 /// </summary>
 public sealed class UpdateChecker
@@ -102,6 +102,8 @@ public sealed class UpdateChecker
 
     public Action<string>? Log { get; set; }
     public Uri Api => _api;
+    /// <summary>True only when <see cref="UrlEnv"/> (or a test) points the check somewhere other than GitHub.</summary>
+    public bool IsOverridden => _api != LatestApi;
 
     public UpdateChecker(string? cacheFile, HttpMessageHandler? handler = null, Func<DateTimeOffset>? now = null, Uri? api = null)
     {
@@ -151,12 +153,8 @@ public sealed class UpdateChecker
 
         try
         {
-            using var http = _handler != null ? new HttpClient(_handler, disposeHandler: false) : new HttpClient();
-            http.Timeout = Timeout;
-            using var req = new HttpRequestMessage(HttpMethod.Get, _api);
-            req.Headers.UserAgent.Add(new ProductInfoHeaderValue("TarkovPriceOverlay", cur.ToString()));
-            req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-            req.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
+            using var http = NewClient(Timeout);
+            using var req = NewRequest(cur);
             using var resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
             if (resp.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests)
             {
@@ -188,6 +186,47 @@ public sealed class UpdateChecker
         catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidOperationException or NotSupportedException)
         {
             return Done(new(UpdateStatus.Failed, cur, null, ReleasesPage, $"offline or unreachable ({ex.GetType().Name}: {ex.Message})", false));
+        }
+    }
+
+    private HttpClient NewClient(TimeSpan timeout)
+    {
+        var http = _handler != null ? new HttpClient(_handler, disposeHandler: false) : new HttpClient();
+        http.Timeout = timeout;
+        return http;
+    }
+
+    private HttpRequestMessage NewRequest(AppVersion cur)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, _api);
+        req.Headers.UserAgent.Add(new ProductInfoHeaderValue("TarkovPriceOverlay", cur.ToString()));
+        req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+        req.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
+        return req;
+    }
+
+    /// <summary>
+    /// 1.2.8 (Update now): one fresh releases/latest request with the asset list. No cache; throws
+    /// <see cref="UpdateException"/> with a plain-words reason on any failure.
+    /// </summary>
+    public async Task<ReleaseInfo> FetchLatestAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            using var http = NewClient(TimeSpan.FromSeconds(15));
+            using var req = NewRequest(CurrentVersion);
+            using var resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+            if (resp.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests)
+                throw new UpdateException($"GitHub is limiting requests right now ({(int)resp.StatusCode}). Try again in a while, or use Open releases page.");
+            if (!resp.IsSuccessStatusCode) throw new UpdateException($"GitHub answered {(int)resp.StatusCode} when asked for the latest release.");
+            await using var body = await resp.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+            using var doc = await JsonDocument.ParseAsync(body, cancellationToken: ct).ConfigureAwait(false);
+            return ReleaseInfo.Parse(doc.RootElement);
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested) { throw new UpdateException("GitHub didn't answer in time (15 s)."); }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or NotSupportedException)
+        {
+            throw new UpdateException($"Couldn't reach GitHub ({ex.GetType().Name}: {ex.Message}).");
         }
     }
 

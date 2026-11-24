@@ -372,7 +372,7 @@ public sealed class SettingsWindow : Window
         if (r == null) return $"This is version {cur}. Not checked yet this launch.";
         return r.Status switch
         {
-            Core.Updates.UpdateStatus.Available => $"Version {r.Latest} is available (you have {cur}). Use Download on the main window, or Open releases page.",
+            Core.Updates.UpdateStatus.Available => $"Version {r.Latest} is available (you have {cur}). Click Update now to install it (the overlay restarts), or Open releases page to download it yourself.",
             Core.Updates.UpdateStatus.Skipped => $"Version {r.Latest} is available, but you chose to skip it (you have {cur}).",
             Core.Updates.UpdateStatus.UpToDate => $"You're up to date ({cur}; latest release {r.Latest}).",
             Core.Updates.UpdateStatus.Disabled => $"This is version {cur}. The update check is off.",
@@ -389,7 +389,7 @@ public sealed class SettingsWindow : Window
         p.Children.Add(Ui.Row(Ui.Button("Refresh prices now", async (_, _) => await _h.Services.Catalog.RefreshNowAsync())));
         // 1.2.6: update check
         p.Children.Add(Heading("Updates"));
-        var upd = Check("Check for updates on launch (asks GitHub for the latest release at most every 6 h; never downloads or installs anything)", s0.CheckForUpdates);
+        var upd = Check("Check for updates on launch (asks GitHub for the latest release at most every 6 h; only Update now downloads and installs)", s0.CheckForUpdates);
         var updState = Ui.Text(UpdateText(_h.Services.UpdateResult), 11, Theme.Muted, wrap: true);
         upd.Checked += (_, _) => { s0.CheckForUpdates = true; Saved("update check = on"); };
         upd.Unchecked += (_, _) => { s0.CheckForUpdates = false; Saved("update check = off"); };
@@ -398,6 +398,35 @@ public sealed class SettingsWindow : Window
         Action<Core.Updates.UpdateCheckResult> onUpd = r => Dispatcher.BeginInvoke(() => updState.Text = UpdateText(r));
         _h.Services.UpdateResultChanged += onUpd;
         Closed += (_, _) => _h.Services.UpdateResultChanged -= onUpd;
+        // 1.2.8: Update now (download from GitHub, verify, install, restart)
+        var selfState = Ui.Text("", 11, Theme.Muted, wrap: true);
+        var selfBar = new ProgressBar { Height = 4, Minimum = 0, Maximum = 100, Margin = new Thickness(0, 2, 0, 2), Visibility = Visibility.Collapsed, Foreground = Theme.Green, Background = Theme.Window, BorderThickness = new Thickness(0) };
+        Button? updNow = null, updCancel = null;
+        void ShowSelf(SelfUpdateStatus st)
+        {
+            selfState.Text = st.Phase switch
+            {
+                SelfUpdatePhase.Failed => "Update failed: " + st.Text,
+                SelfUpdatePhase.Idle => "",
+                _ => st.Text,
+            };
+            selfState.Foreground = st.Phase == SelfUpdatePhase.Failed ? Theme.Warn : Theme.Muted;
+            selfBar.Visibility = st.Phase == SelfUpdatePhase.Working ? Visibility.Visible : Visibility.Collapsed;
+            selfBar.IsIndeterminate = st.Fraction == null;
+            if (st.Fraction is { } f) selfBar.Value = f * 100;
+            if (updNow != null) updNow.IsEnabled = !st.Busy;
+            if (updCancel != null) updCancel.IsEnabled = st.Phase == SelfUpdatePhase.Working;
+        }
+        Action<SelfUpdateStatus> onSelf = st => Dispatcher.BeginInvoke(() => ShowSelf(st));
+        _h.Services.SelfUpdateChanged += onSelf;
+        Closed += (_, _) => _h.Services.SelfUpdateChanged -= onSelf;
+        updNow = Ui.Button("Update now", (_, _) => _ = _h.Services.UpdateNowAsync(),
+            "Download the latest release from GitHub, check its SHA-256, install it over this folder and restart the overlay. Settings, caches and logs are kept.");
+        updCancel = Ui.Button("Cancel", (_, _) => _h.Services.CancelUpdate(), "Stop the download; nothing is installed");
+        p.Children.Add(Ui.Row(updNow, updCancel));
+        p.Children.Add(selfBar);
+        p.Children.Add(selfState);
+        ShowSelf(_h.Services.SelfUpdateState);
         p.Children.Add(Ui.Row(
             Ui.Button("Check now", async (_, _) =>
             {
