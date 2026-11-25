@@ -12,6 +12,7 @@ public sealed record CardOptions
     public bool ShowBuyBack { get; init; } = true;
     public bool ShowPerSlot { get; init; } = true;
     public bool ShowStack { get; init; } = true;
+    public bool ShowNeedFlags { get; init; } = true;
     public bool ShowNeeds { get; init; } = true;
     public bool ShowRecipes { get; init; } = true;
     public bool ShowKappaBadge { get; init; } = true;
@@ -26,7 +27,7 @@ public sealed record CardOptions
     public static CardOptions From(AppSettings s, IProgressView? progress) => new()
     {
         ShowFlea = s.CardShowFlea, ShowFleaNet = s.CardShowFleaNet, ShowTrader = s.CardShowTrader, ShowBuyBack = s.CardShowBuyBack,
-        ShowPerSlot = s.CardShowPerSlot, ShowStack = s.CardShowStack, ShowNeeds = s.CardShowNeeds, ShowRecipes = s.CardShowRecipes,
+        ShowPerSlot = s.CardShowPerSlot, ShowStack = s.CardShowStack, ShowNeedFlags = s.CardShowNeedFlags, ShowNeeds = s.CardShowNeeds, ShowRecipes = s.CardShowRecipes,
         ShowKappaBadge = s.ShowKappaBadge, FilterByProgress = s.FilterNeedsByProgress, ShowNonFirNeeds = s.ShowNonFirNeeds,
         Progress = progress,
     };

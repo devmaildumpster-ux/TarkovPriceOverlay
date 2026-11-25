@@ -52,6 +52,12 @@ public static class CardRenderer
         if (m.ModeCue != null) cues.Children.Add(Label(m.ModeCue, 8.5, Theme.Muted, FontWeights.Normal, margin: new Thickness(0, 1, 6, 0)));
         if (cues.Children.Count > 0) stack.Children.Add(cues);
         if (m.Notice != null) stack.Children.Add(Label("⚠ " + m.Notice, 9, Theme.Warn, FontWeights.Normal, wrap: true));
+        if (m.Flags.Count > 0)
+        {
+            var flags = new StackPanel { Margin = new Thickness(0, 4, 0, 1) };
+            foreach (var f in m.Flags) flags.Children.Add(FlagStrip(f));
+            stack.Children.Add(flags);
+        }
 
         if (m.Rows.Count > 0)
         {
@@ -215,6 +221,29 @@ public static class CardRenderer
         Text = text, FontSize = size, Foreground = fg, FontWeight = weight, FontFamily = Theme.Font,
         TextWrapping = wrap ? TextWrapping.Wrap : TextWrapping.NoWrap, Margin = margin ?? new Thickness(0),
     };
+
+    private static Border FlagStrip(CardFlag f)
+    {
+        var (accent, bg) = f.Kind switch
+        {
+            NeedFlagKind.ActiveQuest => (Theme.Gold, Theme.FlagActiveBg),
+            NeedFlagKind.Quest => (Theme.Warn, Theme.FlagQuestBg),
+            _ => (Theme.Blue, Theme.FlagHideoutBg),
+        };
+        var tb = new TextBlock
+        {
+            FontFamily = Theme.Font, FontSize = 9, TextWrapping = TextWrapping.Wrap,
+        };
+        tb.Inlines.Add(new System.Windows.Documents.Run(f.Label) { Foreground = accent, FontWeight = FontWeights.SemiBold });
+        if (!string.IsNullOrEmpty(f.Detail))
+            tb.Inlines.Add(new System.Windows.Documents.Run(" · " + f.Detail) { Foreground = Theme.Text, FontWeight = FontWeights.Normal });
+        return new Border
+        {
+            Background = bg, BorderBrush = accent, BorderThickness = new Thickness(2.5, 0, 0, 0),
+            CornerRadius = new CornerRadius(2), Padding = new Thickness(5, 2.5, 5, 2.5), Margin = new Thickness(0, 0, 0, 2),
+            Child = tb,
+        };
+    }
 
     private static Border Pill(string text, Brush color) => new()
     {

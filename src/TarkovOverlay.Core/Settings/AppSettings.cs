@@ -66,6 +66,7 @@ public sealed class AppSettings
     public bool CardShowBuyBack { get; set; } = true;
     public bool CardShowPerSlot { get; set; } = true;
     public bool CardShowStack { get; set; } = true;
+    public bool CardShowNeedFlags { get; set; } = true;
     public bool CardShowNeeds { get; set; } = true;
     public bool CardShowRecipes { get; set; } = true;
 

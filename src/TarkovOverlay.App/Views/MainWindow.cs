@@ -485,7 +485,7 @@ public sealed class MainWindow : Window
         if (quests.Count > 0)
         {
             _detail.Children.Add(Ui.Text($"Quests ({quests.Count})", 13, Theme.Text, FontWeights.SemiBold));
-            foreach (var q in quests.OrderBy(q => q.Optional).ThenBy(q => q.MinPlayerLevel ?? 0))
+            foreach (var q in quests.OrderByDescending(q => builder.IsQuestActive(q.QuestId)).ThenBy(q => q.Optional).ThenBy(q => q.MinPlayerLevel ?? 0))
                 _detail.Children.Add(TrackRow(builder.QuestRow(q, compact: false), q.GoalKey, () => new TrackedGoal
                 {
                     GoalKey = q.GoalKey, Mode = ctx.Mode.Id, Kind = "quest", Title = q.QuestName, ItemIds = q.AcceptedItemIds.ToList(),

@@ -208,6 +208,7 @@ public sealed class SettingsWindow : Window
             ("Buy-back price", () => s.CardShowBuyBack, v => s.CardShowBuyBack = v),
             ("Price per slot", () => s.CardShowPerSlot, v => s.CardShowPerSlot = v),
             ("Stack / full-stack value", () => s.CardShowStack, v => s.CardShowStack = v),
+            ("Quest & hideout flags", () => s.CardShowNeedFlags, v => s.CardShowNeedFlags = v),
             ("Quest & hideout needs", () => s.CardShowNeeds, v => s.CardShowNeeds = v),
             ("Crafts & barters", () => s.CardShowRecipes, v => s.CardShowRecipes = v),
             ("Kappa badge", () => s.ShowKappaBadge, v => s.ShowKappaBadge = v),
@@ -233,7 +234,7 @@ public sealed class SettingsWindow : Window
         p.Children.Add(nonFir);
         p.Children.Add(Ui.Row(Ui.Button("Hideout levels…", (_, _) => HideoutWindow.Open(_h.Services, this), "Set the station levels you've built"),
             Ui.Button("Quests…", (_, _) => Map.MapFeature.Instance?.OpenQuests(), "Mark quests done / active (the map's quest tracker)")));
-        p.Children.Add(Note("FIR = must be Found in Raid. KAPPA = needed for a quest tarkov.dev marks as required for the Kappa container (Collector and its chain)."));
+        p.Children.Add(Note("Quests update automatically from Tarkov's logs (active / done / failed). Tarkov's logs don't record hideout upgrades, so set built station levels by hand in Hideout levels… (Map › Hideout…). FIR = must be Found in Raid. KAPPA = needed for a Kappa-required quest."));
 
         p.Children.Add(Heading("Shortcuts for the last item / search"));
         p.Children.Add(HotkeyRow("Open Tarkov Wiki for the last item", ShellFeatures.Wiki, () => s.EffectiveWikiHotkey, v => s.WikiHotkey = v, AppSettingsDefaults.Wiki,

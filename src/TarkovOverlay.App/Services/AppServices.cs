@@ -31,8 +31,9 @@ public sealed class AppServices : IDisposable
     public TraderOfferReader OfferReader { get; }
     /// <summary>1.2.0: built hideout levels per mode (hideout-progress.json).</summary>
     public HideoutProgressStore Hideout { get; }
-    /// <summary>1.2.0: quest completion (the one in-app quest tracker, Map › Quests…) + hideout levels for the card.</summary>
-    public IProgressView Progress { get; }
+    /// <summary>1.2.0 / 1.4.0: quest states (Map › Quests…, fed by Tarkov's game logs) + hideout levels for the card.</summary>
+    public IProgressView Progress { get; set; }
+    private TarkovOverlay.Maps.Quests.QuestProgressStore? _fallbackQuests;
 
     /// <summary>1.2.6: GitHub release check (launch, 6 h cache) and its latest result.</summary>
     public UpdateChecker Updates { get; }
@@ -137,6 +138,19 @@ public sealed class AppServices : IDisposable
         LastItemChanged?.Invoke(item);
     }
 
+    private QuestProgressState ReadQuestState(string mode, string questId)
+    {
+        var store = Map.MapFeature.Instance?.Progress
+            ?? (_fallbackQuests ??= new TarkovOverlay.Maps.Quests.QuestProgressStore(new Maps.MapPaths(Paths).ProgressFile));
+        return store.For(mode).Get(questId) switch
+        {
+            TarkovOverlay.Maps.Quests.QuestState.Active => QuestProgressState.Active,
+            TarkovOverlay.Maps.Quests.QuestState.Complete => QuestProgressState.Complete,
+            TarkovOverlay.Maps.Quests.QuestState.Failed => QuestProgressState.Failed,
+            _ => QuestProgressState.None,
+        };
+    }
+
     /// <summary>Card builder with the user's field / filter settings and progress.</summary>
     public CardBuilder Cards(CatalogContext ctx) => new(ctx, Tracker, options: CardOptions.From(Settings, Progress) with { Notice = PriceNotice(ctx) });
 
@@ -172,10 +186,12 @@ public sealed class AppServices : IDisposable
         IconReader = new IconShortNameReader(WindowsOcr, Tesseract);
         OfferReader = new TraderOfferReader(WindowsOcr, Tesseract);
         Hideout = new HideoutProgressStore(HideoutProgressStore.DefaultFile(Paths));
-        // Quest states live in the map feature's quest tracker (single source of truth); none → nothing filtered.
+        // Quest states live in the map feature's quest tracker (fed from Tarkov's logs + Map › Quests…);
+        // before MapFeature initializes (or in --card-preview), read quest-progress.json directly.
         Progress = new ProgressView(
-            (mode, questId) => Map.MapFeature.Instance?.Progress.For(mode).Get(questId) == TarkovOverlay.Maps.Quests.QuestState.Complete,
-            Hideout);
+            (mode, questId) => ReadQuestState(mode, questId) == QuestProgressState.Complete,
+            Hideout,
+            ReadQuestState);
         Updates = new UpdateChecker(Paths.UpdateCheckFile) { Log = Log.Write };
         if (Updates.Api != UpdateChecker.LatestApi) Log.Write($"update check: URL overridden by {UpdateChecker.UrlEnv} = {Updates.Api} (test only)");
         SelfUpdate = new SelfUpdater(Updates, Paths.UpdateDir, AppContext.BaseDirectory) { Log = Log.Write };

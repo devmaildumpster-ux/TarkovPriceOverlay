@@ -18,12 +18,15 @@ Ideas and feedback are welcome: open an issue.
   example a unique short name, or one candidate among several). A verified full-name match is never changed, and
   a bad icon read is ignored if it disagrees with the tooltip. Items that share a short name (loose ammo and its
   packs, both labeled "M995") still show the picker. *Status: Done*
+- **Quest & hideout flags** (1.4.0). Price and "Possible match" cards highlight at the top when a hovered item is
+  needed for your active quests (read automatically from Tarkov's game logs + Map › Quests…), your other
+  not-yet-done quests, or unbuilt hideout upgrades — showing counts, Found-in-Raid status, and both PvP and PvE
+  progress. Hideout station levels are entered manually in Hideout levels… (Map › Hideout…) because Tarkov's logs
+  do not record hideout upgrades. *Status: Done*
 
 ## Planned
 
 ### Prices and items
-- **Quest & hideout flags.** Mark items you still need for quests or hideout upgrades, e.g. "Needed: 2 for
-  Gunsmith". *Status: Planned*
 - **Barter & craft value.** Show when bartering or crafting with an item is worth more than selling it on the flea.
   *Status: Planned*
 - **Price trend.** A small 24-hour / 7-day trend arrow on cards, so you can see whether to sell now or hold.

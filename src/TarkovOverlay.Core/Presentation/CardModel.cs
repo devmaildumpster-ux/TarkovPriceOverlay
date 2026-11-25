@@ -8,6 +8,14 @@ public sealed record CardRow(string Label, string Value, string? Detail = null, 
 
 public sealed record CardSection(string Title, IReadOnlyList<string> Rows, int MoreCount);
 
+/// <summary>1.4.0: prominent quest/hideout need callout at the top of a price card.</summary>
+public enum NeedFlagKind { ActiveQuest, Quest, Hideout }
+
+public sealed record CardFlag(NeedFlagKind Kind, string Label, string Detail, int Count, int FirCount)
+{
+    public string Text => string.IsNullOrEmpty(Detail) ? Label : $"{Label} · {Detail}";
+}
+
 public sealed class CardModel
 {
     public CardKind Kind { get; init; }
@@ -26,6 +34,8 @@ public sealed class CardModel
     public IReadOnlyList<string> Messages { get; init; } = Array.Empty<string>();
     /// <summary>1.2.0: short pills after the status, e.g. "KAPPA".</summary>
     public IReadOnlyList<string> Badges { get; init; } = Array.Empty<string>();
+    /// <summary>1.4.0: top-of-card callouts when the item is needed for active/upcoming quests or unbuilt hideout upgrades.</summary>
+    public IReadOnlyList<CardFlag> Flags { get; init; } = Array.Empty<CardFlag>();
     public IReadOnlyList<string> CandidateIds { get; init; } = Array.Empty<string>();
     /// <summary>True for the expanded cursor card (all quests, crafts, barters, hideout rows).</summary>
     public bool Expanded { get; init; }

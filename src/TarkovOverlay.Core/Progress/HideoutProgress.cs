@@ -2,11 +2,17 @@ using System.Text.Json;
 
 namespace TarkovOverlay.Core.Progress;
 
-/// <summary>What the price card needs to know about the player's own progress (1.2.0).</summary>
+/// <summary>Quest progress state visible on price/item cards (1.4.0; mirrors the map's quest tracker).</summary>
+public enum QuestProgressState { None = 0, Active = 1, Complete = 2, Failed = 3 }
+
+/// <summary>What the price card needs to know about the player's own progress (1.2.0 / 1.4.0).</summary>
 public interface IProgressView
 {
     /// <summary>True only when the quest is explicitly marked Completed for that mode.</summary>
     bool IsQuestCompleted(string modeId, string questId);
+    /// <summary>Full quest state (Active / Complete / Failed / None) for that mode.</summary>
+    QuestProgressState QuestState(string modeId, string questId) =>
+        IsQuestCompleted(modeId, questId) ? QuestProgressState.Complete : QuestProgressState.None;
     /// <summary>Built level of a hideout station for that mode (0 = not built / unknown).</summary>
     int StationLevel(string modeId, string stationId);
 }
@@ -97,13 +103,19 @@ public sealed class HideoutProgressStore
 public sealed class ProgressView : IProgressView
 {
     private readonly Func<string, string, bool> _questDone;
+    private readonly Func<string, string, QuestProgressState>? _questState;
     private readonly HideoutProgressStore? _hideout;
 
-    public ProgressView(Func<string, string, bool> questCompleted, HideoutProgressStore? hideout)
+    public ProgressView(Func<string, string, bool> questCompleted, HideoutProgressStore? hideout,
+        Func<string, string, QuestProgressState>? questState = null)
     {
-        _questDone = questCompleted; _hideout = hideout;
+        _questDone = questCompleted; _hideout = hideout; _questState = questState;
     }
 
-    public bool IsQuestCompleted(string modeId, string questId) => _questDone(modeId, questId);
+    public bool IsQuestCompleted(string modeId, string questId) =>
+        _questState != null ? _questState(modeId, questId) == QuestProgressState.Complete : _questDone(modeId, questId);
+    public QuestProgressState QuestState(string modeId, string questId) =>
+        _questState != null ? _questState(modeId, questId)
+        : _questDone(modeId, questId) ? QuestProgressState.Complete : QuestProgressState.None;
     public int StationLevel(string modeId, string stationId) => _hideout?.Level(modeId, stationId) ?? 0;
 }

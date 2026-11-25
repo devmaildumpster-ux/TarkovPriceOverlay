@@ -4,6 +4,7 @@ using TarkovOverlay.Core.Economics;
 using TarkovOverlay.Core.Ammo;
 using TarkovOverlay.Core.Indexes;
 using TarkovOverlay.Core.Matching;
+using TarkovOverlay.Core.Progress;
 using TarkovOverlay.Core.Recognition;
 using TarkovOverlay.Core.Settings;
 
@@ -33,7 +34,7 @@ public sealed class CardBuilder
         int done = 0, nonFir = 0;
         foreach (var n in all)
         {
-            if (_o.FilterByProgress && _o.Progress?.IsQuestCompleted(Mode, n.QuestId) == true) { done++; continue; }
+            if (_o.FilterByProgress && _o.Progress?.QuestState(Mode, n.QuestId) is QuestProgressState.Complete or QuestProgressState.Failed) { done++; continue; }
             if (!_o.ShowNonFirNeeds && !n.FoundInRaid) { nonFir++; continue; }
             shown.Add(n);
         }
@@ -54,9 +55,71 @@ public sealed class CardBuilder
         return (shown, built, nonFir);
     }
 
-    /// <summary>Needed (not completed) for a Kappa-required quest — Collector and its chain in the tarkov.dev feed.</summary>
+    /// <summary>True when the player's quest tracker (from Tarkov logs or manual mark) has this quest active in this mode.</summary>
+    public bool IsQuestActive(string questId) => _o.Progress?.QuestState(Mode, questId) == QuestProgressState.Active;
+
+    /// <summary>Needed (not completed/failed) for a Kappa-required quest — Collector and its chain in the tarkov.dev feed.</summary>
     public bool IsKappaItem(string itemId) =>
-        _ctx.Quests.For(itemId).Any(n => n.KappaRequired && !(_o.FilterByProgress && _o.Progress?.IsQuestCompleted(Mode, n.QuestId) == true));
+        _ctx.Quests.For(itemId).Any(n => n.KappaRequired && !(_o.FilterByProgress && _o.Progress?.QuestState(Mode, n.QuestId) is QuestProgressState.Complete or QuestProgressState.Failed));
+
+    /// <summary>1.4.0: compact top-of-card flags for active quests, not-yet-done quests, and unbuilt hideout upgrades.</summary>
+    public IReadOnlyList<CardFlag> NeedFlags(string itemId)
+    {
+        if (!_o.ShowNeedFlags) return Array.Empty<CardFlag>();
+        var flags = new List<CardFlag>();
+
+        var (qNeeds, _, _) = VisibleQuestNeeds(itemId);
+        var qOpen = qNeeds
+            .Select(n => (Need: n, Rem: Remaining(n.GoalKey) ?? n.Count, Active: IsQuestActive(n.QuestId)))
+            .Where(x => x.Rem > 0)
+            .ToList();
+        bool hasActive = qOpen.Any(x => x.Active);
+        AddQuestFlag(flags, qOpen.Where(x => x.Active).ToList(), active: true, hasActive: hasActive);
+        AddQuestFlag(flags, qOpen.Where(x => !x.Active).ToList(), active: false, hasActive: hasActive);
+
+        var (hNeeds, _, _) = VisibleHideoutNeeds(itemId);
+        var hOpen = hNeeds
+            .Select(n => (Need: n, Rem: Remaining(n.GoalKey) ?? n.Count))
+            .Where(x => x.Rem > 0)
+            .OrderBy(x => x.Need.Level)
+            .ThenBy(x => x.Need.StationName, StringComparer.Ordinal)
+            .ToList();
+        if (hOpen.Count > 0)
+        {
+            int total = hOpen.Sum(x => x.Rem);
+            int fir = hOpen.Where(x => x.Need.FoundInRaid).Sum(x => x.Rem);
+            var upgrades = hOpen.Select(x => $"{x.Need.StationName} L{x.Need.Level}").Distinct(StringComparer.Ordinal).ToList();
+            string detail = upgrades.Count == 1 ? upgrades[0] : $"{upgrades[0]} +{upgrades.Count - 1}";
+            flags.Add(new CardFlag(NeedFlagKind.Hideout, $"HIDEOUT · {QtyFir(total, fir)}", detail, total, fir));
+        }
+
+        return flags;
+
+        static void AddQuestFlag(List<CardFlag> dest, List<(QuestNeed Need, int Rem, bool Active)> group, bool active, bool hasActive)
+        {
+            if (group.Count == 0) return;
+            var req = group.Where(x => !x.Need.Optional).ToList();
+            bool optionalOnly = req.Count == 0;
+            var used = optionalOnly ? group : req;
+            int total = used.Sum(x => x.Rem);
+            int fir = used.Where(x => x.Need.FoundInRaid).Sum(x => x.Rem);
+            var names = used.OrderBy(x => x.Need.MinPlayerLevel ?? 0).ThenBy(x => x.Need.QuestName, StringComparer.Ordinal)
+                .Select(x => x.Need.QuestName).Distinct(StringComparer.Ordinal).ToList();
+            string qty = QtyFir(total, fir);
+            string prefix = active
+                ? (names.Count == 1 ? "ACTIVE QUEST" : "ACTIVE QUESTS")
+                : hasActive
+                    ? (names.Count == 1 ? "LATER QUEST" : "LATER QUESTS")
+                    : (names.Count == 1 ? "QUEST" : "QUESTS");
+            string label = $"{prefix} · {(hasActive && !active ? "+" : "")}{qty}";
+            string opt = optionalOnly ? " (opt)" : "";
+            string detail = names.Count == 1 ? $"{names[0]}{opt}" : $"{names[0]} +{names.Count - 1}{opt}";
+            dest.Add(new CardFlag(active ? NeedFlagKind.ActiveQuest : NeedFlagKind.Quest, label, detail, total, fir));
+        }
+
+        static string QtyFir(int total, int fir) =>
+            fir <= 0 ? $"{total}×" : fir >= total ? $"{total}× FIR" : $"{total}× ({fir} FIR)";
+    }
 
     private CatalogSnapshot Snap => _ctx.Snapshot;
     private string Mode => _ctx.Mode.Id;
@@ -194,6 +257,7 @@ public sealed class CardBuilder
             Facts = facts,
             Sections = full.Sections,
             Badges = full.Badges,
+            Flags = full.Flags,
             Expanded = expanded,
             CandidateIds = items.Select(i => i.Id).ToArray(),
         };
@@ -241,6 +305,8 @@ public sealed class CardBuilder
             Title = item.Name,
             ItemId = item.Id,
             ModeCue = _ctx.Mode.ShortCue,
+            Badges = _o.ShowKappaBadge && IsKappaItem(item.Id) ? new[] { "KAPPA" } : Array.Empty<string>(),
+            Flags = NeedFlags(item.Id),
             Rows = rows,
             Messages = msgs,
             CandidateIds = alts.Prepend(item).Select(i => i.Id).ToArray(),
@@ -308,6 +374,7 @@ public sealed class CardBuilder
             Facts = facts,
             Sections = sections,
             Badges = badges,
+            Flags = NeedFlags(item.Id),
             Expanded = expanded,
         };
     }
@@ -440,7 +507,8 @@ public sealed class CardBuilder
         var (needs, done, _) = VisibleQuestNeeds(item.Id);
         doneHidden += done;
         if (needs.Count == 0) return null;
-        var ordered = needs.OrderByDescending(n => Remaining(n.GoalKey) is > 0)
+        var ordered = needs.OrderByDescending(n => IsQuestActive(n.QuestId))
+            .ThenByDescending(n => Remaining(n.GoalKey) is > 0)
             .ThenBy(n => n.Optional).ThenBy(n => n.MinPlayerLevel ?? 0).ToList();
         var rows = ordered.Take(max).Select(n => QuestRow(n, compact)).ToList();
         int required = needs.Where(n => !n.Optional).Sum(n => n.Count);
@@ -454,6 +522,7 @@ public sealed class CardBuilder
     public string QuestRow(QuestNeed n, bool compact)
     {
         var parts = new List<string> { n.QuestName };
+        if (IsQuestActive(n.QuestId)) parts.Add("Active");
         var rem = Remaining(n.GoalKey);
         parts.Add(rem is { } r ? $"{r} left" : $"{n.Count}×");
         if (n.FoundInRaid) parts.Add("FIR");

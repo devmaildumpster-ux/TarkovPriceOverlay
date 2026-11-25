@@ -27,8 +27,21 @@ internal static class CardPreview
         double scale = double.TryParse(Take("--scale"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var sc) && sc > 0 ? sc : 1.5;
         var iconShort = Take("--icon-short");
         bool refresh = rest.Remove("--refresh"); // 1.2.5: try a refresh first (shows the outage notice when tarkov.dev is down)
+        bool noFlags = rest.Remove("--no-flags");
+        bool expanded = rest.Remove("--expanded");
+        var activeQuests = new List<string>();
+        var doneQuests = new List<string>();
+        var hideoutLevels = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        while (Take("--active-quest") is { } aq) activeQuests.Add(aq);
+        while (Take("--done-quest") is { } dq) doneQuests.Add(dq);
+        while (Take("--hideout-level") is { } hl)
+        {
+            var eq = hl.IndexOf('=');
+            if (eq > 0 && int.TryParse(hl[(eq + 1)..], out var lv)) hideoutLevels[hl[..eq].Trim()] = lv;
+        }
 
         using var services = new AppServices();
+        if (noFlags) services.Settings.CardShowNeedFlags = false;
         services.Catalog.SwitchModeAsync(mode, refresh: false).GetAwaiter().GetResult();
         if (services.Catalog.Context == null) services.Catalog.RefreshNowAsync().GetAwaiter().GetResult();
         var ctx = services.Catalog.Context;
@@ -45,7 +58,9 @@ internal static class CardPreview
             Console.WriteLine($"icon-short '{iconShort}' → {after.Kind} {after.Repair} · {string.Join(" | ", after.Items.Take(3).Select(x => x.Name))}");
             m = after;
         }
-        var card = services.Cards(ctx).ForMatch(m);
+        if (activeQuests.Count > 0 || doneQuests.Count > 0 || hideoutLevels.Count > 0)
+            services.Progress = new PreviewProgress(services.Progress, ctx, activeQuests, doneQuests, hideoutLevels);
+        var card = services.Cards(ctx).ForMatch(m, expanded: expanded);
         Console.WriteLine($"notice: {card.Notice ?? "(none)"}");
         Console.WriteLine($"card {card.Kind} '{card.Heading}' '{card.Title}' rows {string.Join("; ", card.Rows.Select(r => r.Label + " " + r.Value))} msgs {string.Join("; ", card.Messages)}");
         var el = CardRenderer.Build(card, scale);
@@ -67,5 +82,44 @@ internal static class CardPreview
         using (var fs = File.Create(outFile)) enc.Save(fs);
         Console.WriteLine($"saved {outFile} ({w}×{h})");
         return 0;
+    }
+
+    private sealed class PreviewProgress : TarkovOverlay.Core.Progress.IProgressView
+    {
+        private readonly TarkovOverlay.Core.Progress.IProgressView _inner;
+        private readonly Dictionary<string, TarkovOverlay.Core.Progress.QuestProgressState> _q = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, int> _h = new(StringComparer.OrdinalIgnoreCase);
+
+        public PreviewProgress(TarkovOverlay.Core.Progress.IProgressView inner, CatalogContext ctx,
+            IEnumerable<string> activeQuests, IEnumerable<string> doneQuests, Dictionary<string, int> hideoutLevels)
+        {
+            _inner = inner;
+            foreach (var a in activeQuests)
+                foreach (var id in ResolveQuests(ctx, a)) _q[id] = TarkovOverlay.Core.Progress.QuestProgressState.Active;
+            foreach (var d in doneQuests)
+                foreach (var id in ResolveQuests(ctx, d)) _q[id] = TarkovOverlay.Core.Progress.QuestProgressState.Complete;
+            foreach (var (k, v) in hideoutLevels)
+            {
+                string? id = ctx.Snapshot.StationNames.FirstOrDefault(kv =>
+                    kv.Key.Equals(k, StringComparison.OrdinalIgnoreCase) || kv.Value.Equals(k, StringComparison.OrdinalIgnoreCase)).Key;
+                _h[id ?? k] = v;
+            }
+        }
+
+        private static IEnumerable<string> ResolveQuests(CatalogContext ctx, string nameOrId)
+        {
+            foreach (var kv in ctx.Snapshot.TaskNames)
+                if (kv.Key.Equals(nameOrId, StringComparison.OrdinalIgnoreCase) || kv.Value.Equals(nameOrId, StringComparison.OrdinalIgnoreCase))
+                    yield return kv.Key;
+        }
+
+        public bool IsQuestCompleted(string modeId, string questId) =>
+            QuestState(modeId, questId) == TarkovOverlay.Core.Progress.QuestProgressState.Complete;
+
+        public TarkovOverlay.Core.Progress.QuestProgressState QuestState(string modeId, string questId) =>
+            _q.TryGetValue(questId, out var st) ? st : _inner.QuestState(modeId, questId);
+
+        public int StationLevel(string modeId, string stationId) =>
+            _h.TryGetValue(stationId, out var lv) ? lv : _inner.StationLevel(modeId, stationId);
     }
 }

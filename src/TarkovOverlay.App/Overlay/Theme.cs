@@ -18,6 +18,9 @@ public static class Theme
     public static readonly SolidColorBrush Panel = Brush("#161D20");
     public static readonly SolidColorBrush Warn = Brush("#E8A784");
     public static readonly SolidColorBrush Kappa = Brush("#D7B4F3");
+    public static readonly SolidColorBrush FlagActiveBg = Brush("#272115");
+    public static readonly SolidColorBrush FlagQuestBg = Brush("#241B15");
+    public static readonly SolidColorBrush FlagHideoutBg = Brush("#15202A");
     public static readonly FontFamily Font = new("Segoe UI");
     public static readonly FontFamily Numbers = new("Bahnschrift, Segoe UI");
 
