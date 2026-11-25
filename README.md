@@ -130,6 +130,9 @@ Default keys; every shortcut can be changed or cleared in **Settings…**.
   possible items has) resolves the card on its own, so you don't have to pick in the main window. A verified
   full-name match is left alone. Items that share a short name (for example loose M995 and its ammo packs) still
   show the "Several possible matches" card.
+- **Exit-list reading fix (timed V-Ex & bright sky).** Pressing `O` in raid now upscales small HUD rows and
+  isolates bright or green active/timed rows (such as `Road to North V-Ex 0:00:28`) from bright sky behind the
+  list, with Tesseract as a second pass and sturdier label/timer stripping.
 
 ## New in 1.3.0
 

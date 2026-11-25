@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace TarkovOverlay.Maps.Extracts;
 
@@ -17,41 +18,114 @@ public static class ExitListMatcher
         var res = new List<Match>();
         foreach (var raw in ocrLines)
         {
-            var line = Normalize(StripDecorations(raw));
+            var line = Normalize(StripDecorations(raw, out bool isTransitRow));
             if (line.Length < 3) continue;
+            if (!isTransitRow && (line.StartsWith("transit to ", StringComparison.Ordinal) || line.StartsWith("iransit to ", StringComparison.Ordinal)))
+                isTransitRow = true;
+            var pool = isTransitRow ? ex.Where(e => e.Key.Contains("transit", StringComparison.Ordinal)).ToList() : ex;
+            if (pool.Count == 0) continue;
             double bestScore = 0;
-            foreach (var e in ex) bestScore = Math.Max(bestScore, Score(line, e.Key));
+            foreach (var e in pool) bestScore = Math.Max(bestScore, Score(line, e.Key));
             if (bestScore < minScore) continue;
             // 1.2.7: every extract with the best score counts (the feed can list the same exit twice, e.g. a PMC and a
             // Scav "Railway Exfil" on Interchange; whichever copy the map draws must be marked as listed).
-            foreach (var e in ex)
+            foreach (var e in pool)
                 if (Score(line, e.Key) >= bestScore - 1e-9 && !res.Any(r => r.ExtractId == e.Id))
                     res.Add(new Match(e.Id, e.Name, raw, bestScore));
         }
         return res;
     }
 
-    // Row labels: "EXFIL01", "TRANSIT02" and OCR variants (EXF1L, EXFlL, EXFIL@1, EXFILO3, TRANSITQ1…), also when
-    // glued to the name ("EXFIL01Scav"). 1.2.7: only the label is removed. The word "Exfil" in a name
-    // ("Railway Exfil", "Saferoom Exfil") is kept; 1.2.6 dropped every word starting with "exfil".
-    private static readonly System.Text.RegularExpressions.Regex RowLabel = new(
-        @"^(?:EXF[I1lL|!]L|TRANS[I1lL|!]T)[0-9OoQDIl|!@]{1,3}(?=$|[^0-9OoQDIl|!@])",
-        System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+    // Row labels: "EXFIL01", "TRANSIT02" and OCR variants (case-insensitive, leading punctuation like "“EXFILO2",
+    // OCR confusions like EXF1L, EXFIL@1, EXFILOL, EXFILOT, ExriLoa, IRANSIIO1, TRANSIN04, TRANSHO4, space-separated
+    // "EXFIL 01", or glued to the name like "EXFIL01Scav" / "ExFilodPathtoLighthouse").
+    // 1.2.7+: only the label is removed. Standalone "Exfil", "Railway Exfil", "Saferoom Exfil", "Exit to Woods",
+    // "Expo Checkpoint", and "Transit to ..." (no row number) are kept intact.
+    private static readonly Regex RowLabelPrefix = new(
+        @"^[^\p{L}\p{N}]*(?:ex[frp][i1l|!u]{1,2}[l1|!i]?|(?<transit>[ti1|]?ran[s5][i1l|!h]{1,2}[t7ni1l|!]?))",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
-    /// <summary>Removes "EXFIL01" / "TRANSIT01", times ("12:34", "00:07:30", "??:??:??"), and status words around the name.</summary>
-    internal static string StripDecorations(string s)
+    private static readonly Regex RowNumberStandalone = new(
+        @"^[0-9OoQDIlL|!@SsGgaqdT\]\?]{1,3}$",
+        RegexOptions.CultureInvariant);
+
+    private static readonly Regex RowNumberGlued = new(
+        @"^[0-9OoQDIl|!@sd]{2}",
+        RegexOptions.CultureInvariant);
+
+    private static readonly Regex TimerToken = new(
+        @"^[\(\[]?[0-9OoQDIl|!@?]{1,2}(?:[:.;][0-9OoQDIl|!@?B]{2}){1,2}[\)\]]?s?$",
+        RegexOptions.CultureInvariant);
+
+    private static readonly Regex QuestionJunk = new(
+        @"^[0-9A-Za-z|!@?]{2,}\?$|^[\?]{2,}$|^[27P\?]{4,}$",
+        RegexOptions.CultureInvariant);
+
+    /// <summary>Removes "EXFIL01" / "TRANSIT01", times ("0:00:28", "00:07:30", "0.00.28", "??:??:??"), "?????" noise, and status words around the name.</summary>
+    internal static string StripDecorations(string s) => StripDecorations(s, out _);
+
+    internal static string StripDecorations(string s, out bool isTransitRow)
     {
+        isTransitRow = false;
         var parts = s.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+        while (parts.Count > 1 && !parts[0].Any(char.IsLetterOrDigit)) parts.RemoveAt(0);
+
         for (int i = 0; i < parts.Count; i++)
         {
-            var m = RowLabel.Match(parts[i]);
-            if (!m.Success) continue;
-            var rest = parts[i][m.Length..];
-            if (rest.Length == 0) parts.RemoveAt(i--); else parts[i] = rest;
+            var pm = RowLabelPrefix.Match(parts[i]);
+            if (!pm.Success) continue;
+            var after = parts[i][pm.Length..];
+            bool transitHit = pm.Groups["transit"].Success;
+            if (after.Length == 0)
+            {
+                if (i == 0 && i + 1 < parts.Count && RowNumberStandalone.IsMatch(parts[i + 1]))
+                {
+                    if (transitHit) isTransitRow = true;
+                    parts.RemoveAt(i + 1);
+                    parts.RemoveAt(i--);
+                }
+                continue;
+            }
+            if (RowNumberStandalone.IsMatch(after))
+            {
+                if (transitHit) isTransitRow = true;
+                parts.RemoveAt(i--);
+                continue;
+            }
+            if (after.Length >= 3 && RowNumberGlued.IsMatch(after))
+            {
+                if (transitHit) isTransitRow = true;
+                parts[i] = after[2..];
+            }
         }
-        parts.RemoveAll(p => p.Contains(':') && (p.Count(char.IsDigit) >= 2 || p.Count(c => c == '?') >= 2));
-        string[] status = { "pending...", "pending", "open", "closed", "requirement", "requirement...", "not", "available", "unavailable", "check", "requirements" };
-        while (parts.Count > 0 && status.Contains(parts[^1].ToLowerInvariant())) parts.RemoveAt(parts.Count - 1);
+
+        parts.RemoveAll(p => TimerToken.IsMatch(p) || (p.Contains(':') && (p.Count(c => char.IsDigit(c) || c is 'O' or 'o') >= 2 || p.Count(c => c == '?') >= 2)));
+
+        // Split colon/dot timers at the end like "0 : 00 : 28"
+        while (parts.Count >= 3 && (parts[^2] == ":" || parts[^2] == ".") && parts[^1].Length <= 2 && parts[^3].Length <= 2 &&
+               parts[^1].All(c => char.IsDigit(c) || c is 'O' or 'o' or '?') &&
+               parts[^3].All(c => char.IsDigit(c) || c is 'O' or 'o' or '?'))
+        {
+            parts.RemoveAt(parts.Count - 1);
+            parts.RemoveAt(parts.Count - 1);
+            if (parts.Count > 0 && parts[^1].Length <= 2 && parts[^1].All(c => char.IsDigit(c) || c is 'O' or 'o' or '?'))
+                parts.RemoveAt(parts.Count - 1);
+        }
+
+        string[] status = { "pending...", "pending", "open", "closed", "requirement", "requirement...", "not", "available", "unavailable", "check", "requirements", "required" };
+        while (parts.Count > 0)
+        {
+            var last = parts[^1];
+            if (status.Contains(last.ToLowerInvariant())) { parts.RemoveAt(parts.Count - 1); continue; }
+            if (parts.Count >= 2 && QuestionJunk.IsMatch(last) && !last.Equals("Labyrinth?", StringComparison.OrdinalIgnoreCase))
+            {
+                parts.RemoveAt(parts.Count - 1);
+                continue;
+            }
+            if (parts.Count >= 2 && !last.Any(char.IsLetterOrDigit)) { parts.RemoveAt(parts.Count - 1); continue; }
+            break;
+        }
+        while (parts.Count > 1 && !parts[0].Any(char.IsLetterOrDigit)) parts.RemoveAt(0);
         return string.Join(' ', parts);
     }
 
@@ -65,21 +139,55 @@ public static class ExitListMatcher
             if (char.IsLetterOrDigit(c)) sb.Append(char.ToLowerInvariant(c));
             else if (sb.Length > 0 && sb[^1] != ' ') sb.Append(' ');
         }
-        var r = sb.ToString().Trim();
-        // drop parenthetical decorations like "(co op)" / "(flare)" handled by tokens anyway
-        return r;
+        return sb.ToString().Trim();
     }
 
     /// <summary>1 − normalized Levenshtein distance, also tried against the extract's text without "(…)" parts.</summary>
     internal static double Score(string line, string name)
     {
-        double s = Similarity(line, name);
-        var shortName = Normalize(System.Text.RegularExpressions.Regex.Replace(name, @"\b(co op|flare)\b", "")).Trim();
-        if (shortName.Length > 0 && shortName != name) s = Math.Max(s, Similarity(line, shortName));
-        if (line.Contains(name, StringComparison.Ordinal) && name.Length >= 6) s = Math.Max(s, 0.95);
+        double s = ScoreTarget(line, name);
+        var shortName = Normalize(Regex.Replace(name, @"\b(co op|flare)\b", "")).Trim();
+        if (shortName.Length > 0 && shortName != name) s = Math.Max(s, ScoreTarget(line, shortName));
+        return s;
+    }
+
+    private static double ScoreTarget(string line, string target)
+    {
+        double s = Similarity(line, target);
         // 1.2.7: a row cut off at the right edge ("Power Station V-", "Scav Camp (Co-0") still names the exit
-        if (line.Length >= 8 && line.Length >= name.Length * 0.6 && line.Length < name.Length)
-            s = Math.Max(s, 0.9 * Similarity(line, name[..line.Length]));
+        if (line.Length >= 8 && line.Length >= target.Length * 0.6 && line.Length < target.Length)
+            s = Math.Max(s, 0.9 * Similarity(line, target[..line.Length]));
+
+        var lineNoSp = line.Replace(" ", "");
+        var targetNoSp = target.Replace(" ", "");
+        if (lineNoSp.Length >= 6 && targetNoSp.Length >= 6)
+            s = Math.Max(s, 0.95 * Similarity(lineNoSp, targetNoSp));
+
+        if (target.Length >= 6)
+        {
+            var words = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length > 1)
+            {
+                for (int i = 0; i < words.Length; i++)
+                {
+                    var sb = new StringBuilder();
+                    for (int j = i; j < words.Length; j++)
+                    {
+                        if (j > i) sb.Append(' ');
+                        sb.Append(words[j]);
+                        if (i == 0 && j == words.Length - 1) continue;
+                        var span = sb.ToString();
+                        if (span.Length < target.Length * 0.6 || span.Length > target.Length * 1.45) continue;
+                        double spanSim = Similarity(span, target);
+                        var spanNoSp = span.Replace(" ", "");
+                        if (spanNoSp.Length >= 6 && targetNoSp.Length >= 6)
+                            spanSim = Math.Max(spanSim, 0.95 * Similarity(spanNoSp, targetNoSp));
+                        double weighted = spanSim * (0.72 + 0.26 * Math.Min(1.0, (double)span.Length / line.Length));
+                        if (weighted > s) s = weighted;
+                    }
+                }
+            }
+        }
         return s;
     }
 

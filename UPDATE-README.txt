@@ -22,5 +22,15 @@ NEW: ICON SHORT-NAME TIEBREAKER
   "M995" on the icon — still show the picker.
 - After a match is resolved this way, stack counts are read as usual.
 
+FIX: EXIT LIST (O KEY) TIMED V-EX & BRIGHT-SKY ROWS
+- Active/timed vehicle extracts (such as Shoreline's "Road to North V-Ex 0:00:28") and rows sitting over bright
+  sky could be dropped or misread when the O-key reader ran at 1x on the raw top-right crop.
+- The exit-list reader now upscales small HUD rows (2x at 1080p/1440p, 1.5x at 4K), isolates bright/colored HUD
+  text on dark translucent bars so sky background does not hide top rows, and also checks Tesseract on the
+  second read when Windows OCR misses a row.
+- Row matching now strips OCR-mangled row labels (case-insensitive, leading punctuation, spaced or glued numbers),
+  right-column timers with "." or O/0 confusions, and "?????" noise, and matches space-collapsed OCR without
+  letting a shorter extract ("Lighthouse") outscore a longer one ("Path to Lighthouse").
+
 ALSO
 - Includes everything from 1.0.1–1.3.0 (ammo chart, Update now, exit-list fix, update check, outage handling, …).

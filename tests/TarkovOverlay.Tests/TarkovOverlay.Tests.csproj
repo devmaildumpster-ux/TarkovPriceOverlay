@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\TarkovOverlay.Core\TarkovOverlay.Core.csproj" />
     <ProjectReference Include="..\..\src\TarkovOverlay.Ocr.Tesseract\TarkovOverlay.Ocr.Tesseract.csproj" />
+    <ProjectReference Include="..\..\src\TarkovOverlay.Maps\TarkovOverlay.Maps.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\fixtures\**\*" Link="fixtures\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
