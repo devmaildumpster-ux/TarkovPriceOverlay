@@ -133,6 +133,40 @@ internal static class MapUiPreview
                     main.UpdateLayout();
                     Save(root, Path.ChangeExtension(outFile, null) + "-exitlist.png", null);
                 }
+                // 1.3.1: Quests window (search "postman pat" and record list size so an empty-but-Showing-N layout bug is visible)
+                if (args.Contains("--quests"))
+                {
+                    var questSearch = "postman pat";
+                    int qs = Array.IndexOf(args, "--quests-search");
+                    if (qs >= 0 && qs + 1 < args.Length) questSearch = args[qs + 1];
+                    string? modeName = null;
+                    int qm = Array.IndexOf(args, "--quests-mode");
+                    if (qm >= 0 && qm + 1 < args.Length) modeName = args[qm + 1];
+                    map.OpenQuests();
+                    var qw = app.Windows.OfType<QuestsWindow>().FirstOrDefault() ?? throw new InvalidOperationException("Quests window did not open");
+                    for (int w = 0; w < 200 && (qw.SummaryText.Length == 0 || qw.SummaryText.Contains("Loading", StringComparison.OrdinalIgnoreCase)); w++)
+                        await Task.Delay(100);
+                    if (modeName != null)
+                    {
+                        var want = Core.Catalog.GameMode.All.FirstOrDefault(m => m.Id.Equals(modeName, StringComparison.OrdinalIgnoreCase) || m.DisplayName.Equals(modeName, StringComparison.OrdinalIgnoreCase));
+                        if (want != null && !Equals(qw.ModeBox.SelectedItem, want))
+                        {
+                            qw.ModeBox.SelectedItem = want;
+                            for (int w = 0; w < 200 && (qw.SummaryText.Length == 0 || qw.SummaryText.Contains("Loading", StringComparison.OrdinalIgnoreCase)); w++)
+                                await Task.Delay(100);
+                        }
+                    }
+                    qw.UpdateLayout();
+                    Console.WriteLine($"quests list {qw.List.ActualWidth:0}×{qw.List.ActualHeight:0} items={qw.List.Items.Count} containers={System.Windows.Media.VisualTreeHelper.GetChildrenCount(qw.List)} summary={qw.SummaryText}");
+                    Save((FrameworkElement)qw.Content, Path.ChangeExtension(outFile, null) + "-quests.png", Theme.Window);
+                    qw.SearchBox.Text = questSearch;
+                    await Task.Delay(300);
+                    qw.UpdateLayout();
+                    var names = string.Join(" | ", qw.Rows.Select(r => $"{r.Name} ({r.Trader}, {r.Status})"));
+                    Console.WriteLine($"quests search '{questSearch}': list {qw.List.ActualWidth:0}×{qw.List.ActualHeight:0} items={qw.List.Items.Count} names={names} summary={qw.SummaryText}");
+                    Save((FrameworkElement)qw.Content, Path.ChangeExtension(outFile, null) + "-quests-postman.png", Theme.Window);
+                    qw.Close();
+                }
                 // 1.2.1: Satellite/Vector toggle (button state, shortcut path, single-style map)
                 if (args.Contains("--style-toggle"))
                 {

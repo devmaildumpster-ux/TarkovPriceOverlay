@@ -36,6 +36,14 @@ public sealed class QuestsWindow : Window
 
     private static readonly string[] Filters = QuestListFilter.Statuses;
 
+    internal TextBox SearchBox => _search;
+    internal ComboBox ModeBox => _mode;
+    internal ComboBox FilterBox => _filter;
+    internal ListView List => _list;
+    internal string SummaryText => _summary.Text;
+    internal string StatusText => _status.Text;
+    internal IReadOnlyList<QuestRow> Rows => _list.ItemsSource as IReadOnlyList<QuestRow> ?? Array.Empty<QuestRow>();
+
     public QuestsWindow(MapFeature f)
     {
         _f = f;
@@ -72,8 +80,9 @@ public sealed class QuestsWindow : Window
         pins.Children.Add(_counts);
         head.Children.Add(pins);
         head.Children.Add(_summary);
-        DockPanel.SetDock(head, Dock.Top);
-        root.Children.Add(Ui.Panel(head));
+        var headPanel = Ui.Panel(head);
+        DockPanel.SetDock(headPanel, Dock.Top);
+        root.Children.Add(headPanel);
 
         // bottom: actions, import, TarkovTracker
         var bottom = new StackPanel();
@@ -89,8 +98,9 @@ public sealed class QuestsWindow : Window
         bottom.Children.Add(actions);
         bottom.Children.Add(_status);
         bottom.Children.Add(BuildTrackerBox());
-        DockPanel.SetDock(bottom, Dock.Bottom);
-        root.Children.Add(Ui.Panel(bottom));
+        var bottomPanel = Ui.Panel(bottom);
+        DockPanel.SetDock(bottomPanel, Dock.Bottom);
+        root.Children.Add(bottomPanel);
 
         var grid = new GridView();
         var pinCell = new FrameworkElementFactory(typeof(CheckBox));
@@ -229,6 +239,8 @@ public sealed class QuestsWindow : Window
         rows = rows.OrderBy(r => r.Trader).ThenBy(r => r.Level).ThenBy(r => r.Name).ToList();
         _list.ItemsSource = rows;
         foreach (var r in rows.Where(r => keep.Contains(r.Id))) _list.SelectedItems.Add(r);
+        if (_list.SelectedItem is QuestRow sel) _list.ScrollIntoView(sel);
+        else if (rows.Count > 0) _list.ScrollIntoView(rows[0]);
         var sync = p.LastTrackerSync is { } ls ? $" · TarkovTracker sync {ls.ToLocalTime():MMM d HH:mm}" : "";
         var log = p.LastLogEvent is { } le ? $" · last update from game log {le.ToLocalTime():MMM d HH:mm}" : " · no quest messages read from the game yet";
         _summary.Text = $"{GameMode.FromId(ModeId).DisplayName}: {done} done, {active} active, {avail} available to accept{log}{sync}. Showing {rows.Count}. Tick \"Map\" for the quests you're running; only those are drawn.";

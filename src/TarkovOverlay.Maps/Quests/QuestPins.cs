@@ -33,7 +33,7 @@ public static class QuestPins
             };
             if (!pass) continue;
             if (!string.IsNullOrEmpty(f.Trader) && f.Trader != "All traders" && t.TraderName != f.Trader) continue;
-            if (q.Length > 0 && !t.Name.Contains(q, StringComparison.OrdinalIgnoreCase) && !t.TraderName.Contains(q, StringComparison.OrdinalIgnoreCase)) continue;
+            if (q.Length > 0 && !MatchesSearch(t, q)) continue;
             if (f.MapIds != null && !QuestLogic.TouchesMap(t, f.MapIds)) continue;
             res.Add(t);
         }
@@ -67,6 +67,47 @@ public static class QuestPins
             if (mapIds != null && QuestLogic.TouchesMap(t, mapIds)) here++;
         }
         return (total, here);
+    }
+
+
+    /// <summary>
+    /// Case-insensitive match on the quest or trader name, the normalized name, or a punctuation-stripped
+    /// form so "postman pat", "postman-pat" and "Postman Pat – Part 1" (en-dash) all hit the same quest.
+    /// </summary>
+    internal static bool MatchesSearch(TaskInfo t, string q)
+    {
+        if (t.Name.Contains(q, StringComparison.OrdinalIgnoreCase)) return true;
+        if (t.TraderName.Contains(q, StringComparison.OrdinalIgnoreCase)) return true;
+        var dashed = t.NormalizedName.Replace('-', ' ');
+        if (dashed.Contains(q, StringComparison.OrdinalIgnoreCase)) return true;
+        var nq = NormalizeSearch(q);
+        if (nq.Length == 0) return false;
+        return NormalizeSearch(t.Name).Contains(nq, StringComparison.Ordinal)
+            || NormalizeSearch(t.TraderName).Contains(nq, StringComparison.Ordinal)
+            || NormalizeSearch(dashed).Contains(nq, StringComparison.Ordinal);
+    }
+
+    /// <summary>Lowercase, turn dashes and other punctuation into spaces, collapse whitespace.</summary>
+    internal static string NormalizeSearch(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        var buf = new char[s.Length];
+        int n = 0;
+        bool space = false;
+        foreach (var c in s)
+        {
+            if (char.IsLetterOrDigit(c))
+            {
+                buf[n++] = char.ToLowerInvariant(c);
+                space = false;
+            }
+            else if (!space)
+            {
+                buf[n++] = ' ';
+                space = true;
+            }
+        }
+        return new string(buf, 0, n).Trim();
     }
 
     /// <summary>

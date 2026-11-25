@@ -32,5 +32,13 @@ FIX: EXIT LIST (O KEY) TIMED V-EX & BRIGHT-SKY ROWS
   right-column timers with "." or O/0 confusions, and "?????" noise, and matches space-collapsed OCR without
   letting a shorter extract ("Lighthouse") outscore a longer one ("Path to Lighthouse").
 
+FIX: QUESTS WINDOW SEARCH SHOWED "SHOWING 1" WITH AN EMPTY LIST
+- Searching for a quest (for example "postman pat") could leave the list area blank even though the count
+  under the filters said "Showing 1" (or any number). The header and footer were added to a dock panel inside
+  a padded border, so the list itself got no space and looked empty. Those panels are now docked correctly,
+  and after a search the first matching row is scrolled into view.
+- Search also treats dashes and punctuation as spaces, so "postman pat", "postman-pat" and an en-dash in
+  "Postman Pat – Part 1" all find the same quests (Prapor's Part 1 on Factory and Therapist's Part 2).
+
 ALSO
 - Includes everything from 1.0.1–1.3.0 (ammo chart, Update now, exit-list fix, update check, outage handling, …).
